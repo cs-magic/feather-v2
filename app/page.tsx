@@ -3,14 +3,17 @@
 import {Joystick} from 'react-joystick-component';
 import {IJoystickUpdateEvent} from "react-joystick-component/build/lib/Joystick";
 import {Player} from "@/components/game/player";
-import {FeatherClass, FeatherView} from "@/components/game/feather";
+import {FeatherClass, FeatherComp, IFeatherComp} from "@/components/game/feather";
 import {useEffect, useState} from "react";
 import Image from "next/image";
+import {useElementSize} from "@mantine/hooks"
 
 export default function IndexPage() {
 
   const [nPlayers, setNPlayers] = useState(2)
-  const [feathers, setFeathers] = useState<FeatherClass[]>([])
+  const playerIndex = 0
+
+  const [feathers, setFeathers] = useState<IFeatherComp[]>([])
 
 
   const handleMove = (event: IJoystickUpdateEvent) => {
@@ -21,21 +24,24 @@ export default function IndexPage() {
     console.log('stop: ', event)
   }
 
+
+
+  const {ref, width, height} = useElementSize()
+
   useEffect(() => {
-    setFeathers([new FeatherClass(nPlayers)])
-  }, []);
+    setFeathers([{container: {width, height}, player: {n: nPlayers, k: playerIndex}}])
+  }, [width, height]);
 
   return (
-    <section className="relative w-full h-full">
+    <section className="relative w-full h-full" ref={ref}>
 
       {
-        feathers.map((feather, index) => {
-          return (
-            <Image key={index} src={'/game/feather/feather.png'} alt={'element'} className={'absolute'} width={120} height={60} style={{
-
-            }}></Image>
-          )
-        })
+        feathers
+          .map((feather, index) => {
+            return (
+              <FeatherComp {...feather} key={index}/>
+            )
+          })
       }
 
       <Player player={{blow: '/game/player/A/blow.png', pos: "top"}}/>
