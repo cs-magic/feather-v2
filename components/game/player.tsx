@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { HTMLAttributes, forwardRef, useState } from "react"
 import Image from "next/image"
 
 import { cn } from "@/lib/utils"
@@ -9,7 +9,10 @@ export interface IPlayer {
   x?: number
 }
 
-export const Player = ({ player }: { player: IPlayer }) => {
+export const Player = forwardRef<
+  HTMLImageElement,
+  HTMLAttributes<HTMLImageElement> & { player: IPlayer }
+>(({ player }, ref) => {
   const [playerState, setPlayerState] = useState(player.blow)
 
   return (
@@ -25,6 +28,9 @@ export const Player = ({ player }: { player: IPlayer }) => {
       style={{
         left: player.x ?? 320,
       }}
+      ref={ref}
     />
   )
-}
+})
+
+Player.displayName = "Player"

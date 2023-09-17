@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 import { Joystick } from "react-joystick-component"
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
@@ -14,7 +15,10 @@ import {
 } from "@/config/game"
 import useInterval from "@/hooks/interval"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { JoystickController } from "@/components/game/controller/joystick"
 import { FeatherManager } from "@/components/game/feather-manager"
+import { MainPlayer } from "@/components/game/main-player"
 import { Player } from "@/components/game/player"
 
 export default function IndexPage() {
@@ -24,41 +28,11 @@ export default function IndexPage() {
 
   const featherManager = useRef(new FeatherManager())
 
-  const {
-    ref: viewPointRef,
-    width: viewPointWidth,
-    height: viewPointHeight,
-  } = useElementSize()
-  const {
-    ref: mainPlayerRef,
-    width: mainPlayerWidth,
-    height: mainPlayerHeight,
-  } = useElementSize()
-  const [speed, setSpeed] = useState(0)
-  const [playerX, setPlayerX] = useState(0)
-
-  const handleMove = (event: IJoystickUpdateEvent) => {
-    setSpeed(event.x ?? 0)
-    console.log("moving: ", event)
-  }
-
-  const handleStop = (event: IJoystickUpdateEvent) => {
-    setSpeed(0)
-    console.log("stop: ", event)
-  }
-
+  const { ref, width, height } = useElementSize()
+  const { setViewPointWidth } = useAppStore()
   useEffect(() => {
-    setPlayerX(viewPointWidth >> 1)
-  }, [viewPointWidth])
-
-  useInterval(() => {
-    console.log(speed, playerX)
-    if (speed > 0 && playerX < viewPointWidth * MainPlayerMaxX) {
-      setPlayerX(playerX + speed * MainPlayerDefaultSpeed)
-    } else if (speed < 0 && playerX > viewPointWidth * MainPlayerMinX) {
-      setPlayerX(playerX + speed * MainPlayerDefaultSpeed)
-    }
-  }, 20) // 20ms, 50FPS
+    setViewPointWidth(width)
+  }, [width])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -74,7 +48,7 @@ export default function IndexPage() {
   console.log({ tick })
 
   return (
-    <section className="relative w-full h-full" ref={viewPointRef}>
+    <section className="relative w-full h-full" ref={ref}>
       {featherManager.current.state === "stopped" && (
         <div
           className={
@@ -92,7 +66,6 @@ export default function IndexPage() {
 
       {featherManager.current.toUser(mainPlayerIndex).map((feather, index) => (
         <Image
-          ref={mainPlayerRef}
           key={index}
           src={"/game/feather/feather.png"}
           alt={"element"}
@@ -100,43 +73,27 @@ export default function IndexPage() {
           width={120}
           height={60}
           style={{
-            left: viewPointWidth * feather.x,
-            top: viewPointHeight * feather.y,
+            left: width * feather.x,
+            top: height * feather.y,
           }}
         />
       ))}
 
       <Player player={{ blow: "/game/player/A/blow.png", pos: "top" }} />
 
-      <Player
-        player={{
-          blow: "/game/player/B/blow.png",
-          pos: "bottom",
-          x: playerX - mainPlayerWidth / 2,
-        }}
-      />
+      <MainPlayer />
 
-      <div
-        className={"absolute left-8 bottom-8 flex items-center justify-center"}
-      >
-        <Joystick
-          size={100}
-          sticky={false}
-          stickSize={50}
-          baseColor="#222"
-          stickColor="#165E75"
-          move={handleMove}
-          stop={handleStop}
-        ></Joystick>
+      <div className={"absolute left-8 bottom-8"}>
+        <JoystickController />
       </div>
 
-      <div
+      <Button
         className={
           "absolute right-8 bottom-8 w-16 h-16 | rounded-full shrink-0 | flex items-center justify-center | bg-cyan-800 p-6 whitespace-nowrap"
         }
       >
         蓄力
-      </div>
+      </Button>
     </section>
   )
 }
