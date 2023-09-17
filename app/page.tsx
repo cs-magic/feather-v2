@@ -9,24 +9,41 @@ import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystic
 import { FeatherRenderInterval } from "@/config/game"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FeatherManager } from "@/components/game/feather-manager"
-import { Player } from "@/components/game/player"
+import useInterval, { Player } from "@/components/game/player"
+
+const MinX = 180
+const MaxX = 460
+const DefaultSpeed = 3 // change this to adjust speed of player moving
 
 export default function IndexPage() {
   const [tick, setTick] = useState(0)
   const [nPlayers, setNPlayers] = useState(2)
   const k = 0
 
+  const [speed, setSpeed] = useState(0)
+  const [playerX, setPlayerX] = useState(320)
   const featherManager = useRef(new FeatherManager())
 
   const { ref, width, height } = useElementSize()
 
   const handleMove = (event: IJoystickUpdateEvent) => {
-    console.log("moving: ", event)
+    setSpeed(event.x ?? 0)
+    console.log('moving: ', event)
   }
 
   const handleStop = (event: IJoystickUpdateEvent) => {
-    console.log("stop: ", event)
+    setSpeed(0)
+    console.log('stop: ', event)
   }
+
+  useInterval(() => {
+    console.log(speed, playerX)
+    if (speed > 0 && playerX < MaxX) {
+      setPlayerX(playerX + speed * DefaultSpeed)
+    } else if (speed < 0 && playerX > MinX) {
+      setPlayerX(playerX + speed * DefaultSpeed)
+    }
+  }, 20) // 20ms, 50FPS
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -74,15 +91,14 @@ export default function IndexPage() {
       ))}
 
       <Player player={{ blow: "/game/player/A/blow.png", pos: "top" }} />
-
-      <Player player={{ blow: "/game/player/B/blow.png", pos: "bottom" }} />
+      <Player player={{blow: '/game/player/B/blow.png', pos: "bottom", x: playerX}}/>
 
       <div
         className={"absolute left-8 bottom-8 flex items-center justify-center"}
       >
         <Joystick
           size={100}
-          sticky={true}
+          sticky={false}
           baseColor="gray"
           stickColor="blue"
           move={handleMove}
