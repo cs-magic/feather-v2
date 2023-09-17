@@ -2,16 +2,10 @@
 
 import {Joystick} from 'react-joystick-component';
 import {IJoystickUpdateEvent} from "react-joystick-component/build/lib/Joystick";
-import {useState} from "react";
-import Image from "next/image";
-
-export enum PlayerAction {
-  blow = '/player/blow.png',
-}
+import {Player} from "@/components/player";
 
 export default function IndexPage() {
 
-  const [player, setPlayer] = useState<PlayerAction>(PlayerAction.blow)
 
   const handleMove = (event: IJoystickUpdateEvent) => {
     console.log('moving: ', event)
@@ -23,12 +17,10 @@ export default function IndexPage() {
 
   return (
     <section className="relative w-full h-full">
-      <h1 className={'text-xl text-center bg-cyan-800 py-4 '}>李佳琦吹羽毛</h1>
 
+      <Player player={{blow: '/player/A/blow.png', pos: "top"}}/>
 
-        <Image src={player} alt={'player'} width={120} height={360} className={'absolute bottom-0 w-[20%]'} style={{
-          left: 320
-        }}/>
+      <Player player={{blow: '/player/B/blow.png', pos: "bottom"}}/>
 
       <div className={'absolute left-8 bottom-8 flex items-center justify-center'}>
 
