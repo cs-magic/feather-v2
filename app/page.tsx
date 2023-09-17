@@ -6,42 +6,57 @@ import { useElementSize } from "@mantine/hooks"
 import { Joystick } from "react-joystick-component"
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
 
-import { FeatherRenderInterval } from "@/config/game"
+import {
+  FeatherRenderInterval,
+  MainPlayerDefaultSpeed,
+  MainPlayerMaxX,
+  MainPlayerMinX,
+} from "@/config/game"
+import useInterval from "@/hooks/interval"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FeatherManager } from "@/components/game/feather-manager"
-import useInterval, { Player } from "@/components/game/player"
-
-const MinX = 180
-const MaxX = 460
-const DefaultSpeed = 3 // change this to adjust speed of player moving
+import { Player } from "@/components/game/player"
 
 export default function IndexPage() {
   const [tick, setTick] = useState(0)
   const [nPlayers, setNPlayers] = useState(2)
-  const k = 0
+  const mainPlayerIndex = 0
 
-  const [speed, setSpeed] = useState(0)
-  const [playerX, setPlayerX] = useState(320)
   const featherManager = useRef(new FeatherManager())
 
-  const { ref, width, height } = useElementSize()
+  const {
+    ref: viewPointRef,
+    width: viewPointWidth,
+    height: viewPointHeight,
+  } = useElementSize()
+  const {
+    ref: mainPlayerRef,
+    width: mainPlayerWidth,
+    height: mainPlayerHeight,
+  } = useElementSize()
+  const [speed, setSpeed] = useState(0)
+  const [playerX, setPlayerX] = useState(0)
 
   const handleMove = (event: IJoystickUpdateEvent) => {
     setSpeed(event.x ?? 0)
-    console.log('moving: ', event)
+    console.log("moving: ", event)
   }
 
   const handleStop = (event: IJoystickUpdateEvent) => {
     setSpeed(0)
-    console.log('stop: ', event)
+    console.log("stop: ", event)
   }
+
+  useEffect(() => {
+    setPlayerX(viewPointWidth >> 1)
+  }, [viewPointWidth])
 
   useInterval(() => {
     console.log(speed, playerX)
-    if (speed > 0 && playerX < MaxX) {
-      setPlayerX(playerX + speed * DefaultSpeed)
-    } else if (speed < 0 && playerX > MinX) {
-      setPlayerX(playerX + speed * DefaultSpeed)
+    if (speed > 0 && playerX < viewPointWidth * MainPlayerMaxX) {
+      setPlayerX(playerX + speed * MainPlayerDefaultSpeed)
+    } else if (speed < 0 && playerX > viewPointWidth * MainPlayerMinX) {
+      setPlayerX(playerX + speed * MainPlayerDefaultSpeed)
     }
   }, 20) // 20ms, 50FPS
 
@@ -59,7 +74,7 @@ export default function IndexPage() {
   console.log({ tick })
 
   return (
-    <section className="relative w-full h-full" ref={ref}>
+    <section className="relative w-full h-full" ref={viewPointRef}>
       {featherManager.current.state === "stopped" && (
         <div
           className={
@@ -75,8 +90,9 @@ export default function IndexPage() {
         </div>
       )}
 
-      {featherManager.current.toUser(k).map((feather, index) => (
+      {featherManager.current.toUser(mainPlayerIndex).map((feather, index) => (
         <Image
+          ref={mainPlayerRef}
           key={index}
           src={"/game/feather/feather.png"}
           alt={"element"}
@@ -84,14 +100,21 @@ export default function IndexPage() {
           width={120}
           height={60}
           style={{
-            left: width * feather.x,
-            top: height * feather.y,
+            left: viewPointWidth * feather.x,
+            top: viewPointHeight * feather.y,
           }}
         />
       ))}
 
       <Player player={{ blow: "/game/player/A/blow.png", pos: "top" }} />
-      <Player player={{blow: '/game/player/B/blow.png', pos: "bottom", x: playerX}}/>
+
+      <Player
+        player={{
+          blow: "/game/player/B/blow.png",
+          pos: "bottom",
+          x: playerX - mainPlayerWidth / 2,
+        }}
+      />
 
       <div
         className={"absolute left-8 bottom-8 flex items-center justify-center"}
