@@ -40,12 +40,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.variable
           )}
         >
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             {/*<div className="relative flex min-h-screen flex-col">*/}
             {/*  <SiteHeader />*/}
             {/*  <div className="flex-1">{children}</div>*/}
             {/*</div>*/}
-            <div className={'relative w-full md:w-[720px] mx-auto flex flex-col border h-screen overflow-auto'}>
+            <div
+              className={
+                "relative w-full md:w-[720px] mx-auto flex flex-col border h-screen overflow-auto"
+              }
+            >
               {children}
             </div>
             <TailwindIndicator />
