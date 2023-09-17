@@ -17,6 +17,7 @@ import useInterval from "@/hooks/interval"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { JoystickController } from "@/components/game/controller/joystick"
+import { Shoot } from "@/components/game/controller/shoot"
 import { FeatherManager } from "@/components/game/feather-manager"
 import { MainPlayer } from "@/components/game/main-player"
 import { Player } from "@/components/game/player"
@@ -45,7 +46,7 @@ export default function IndexPage() {
     return () => clearInterval(interval)
   }, [])
 
-  console.log({ tick })
+  // console.log({ tick })
 
   return (
     <section className="relative w-full h-full" ref={ref}>
@@ -87,13 +88,9 @@ export default function IndexPage() {
         <JoystickController />
       </div>
 
-      <Button
-        className={
-          "absolute right-8 bottom-8 w-16 h-16 | rounded-full shrink-0 | flex items-center justify-center | bg-cyan-800 p-6 whitespace-nowrap"
-        }
-      >
-        蓄力
-      </Button>
+      <div className={"absolute right-8 bottom-8"}>
+        <Shoot />
+      </div>
     </section>
   )
 }

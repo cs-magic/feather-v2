@@ -21,7 +21,7 @@ export const MainPlayer = () => {
   }, [viewPointWidth])
 
   useInterval(() => {
-    console.log(speed, playerX)
+    // console.log(speed, playerX)
     if (speed > 0 && playerX < viewPointWidth * MainPlayerMaxX) {
       setPlayerX(playerX + speed * MainPlayerDefaultSpeed)
     } else if (speed < 0 && playerX > viewPointWidth * MainPlayerMinX) {
