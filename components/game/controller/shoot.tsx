@@ -55,7 +55,7 @@ export const Shoot = ({
       onMouseUp={onPressingUp}
       onTouchEnd={onPressingUp}
       className={cn(
-        "w-16 h-16 rounded-full p-6 whitespace-nowrap  text-white transition-all"
+        "w-16 h-16 rounded-full p-6 whitespace-nowrap  text-white transition-all select-none"
       )}
       style={{
         background: t === 1 ? "darkred" : `hsl(195,68%,${20 + t * 30}%)`,
