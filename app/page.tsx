@@ -99,8 +99,9 @@ export default function IndexPage() {
         <Joystick
           size={100}
           sticky={false}
-          baseColor="gray"
-          stickColor="blue"
+          stickSize={50}
+          baseColor="#222"
+          stickColor="#165E75"
           move={handleMove}
           stop={handleStop}
         ></Joystick>
