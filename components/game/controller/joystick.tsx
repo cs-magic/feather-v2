@@ -2,16 +2,22 @@ import { useAppStore } from "@/store"
 import { Joystick } from "react-joystick-component"
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
 
+import { MainPlayerMaxX, MainPlayerMinX, MainPlayerSpeed } from "@/config/game"
+
 export const JoystickController = () => {
-  const { speed, setSpeed } = useAppStore()
+  const { playerSpeed, setPlayerSpeed, playerX, setPlayerX } = useAppStore()
 
   const handleMove = (event: IJoystickUpdateEvent) => {
-    setSpeed(event.x ?? 0)
+    setPlayerX(
+      Math.max(
+        MainPlayerMinX,
+        Math.min(MainPlayerMaxX, playerX + (event.x ?? 0) * MainPlayerSpeed)
+      )
+    )
     console.log("moving: ", event)
   }
 
   const handleStop = (event: IJoystickUpdateEvent) => {
-    setSpeed(0)
     console.log("stop: ", event)
   }
 

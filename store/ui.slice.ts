@@ -10,6 +10,9 @@ export interface UIState {
   viewPointWidth: number
   setViewPointWidth: (v: number) => void
 
+  viewPointHeight: number
+  setViewPointHeight: (v: number) => void
+
   mainPlayerWidth: number
   setMainPlayerWidth: (v: number) => void
 }
@@ -23,6 +26,12 @@ export const createUISlice: StoreSlice<UIState> = (
   setViewPointWidth: (v) =>
     setState((state) => {
       state.viewPointWidth = v
+    }),
+
+  viewPointHeight: 0,
+  setViewPointHeight: (v) =>
+    setState((state) => {
+      state.viewPointHeight = v
     }),
 
   mainPlayerWidth: 0,

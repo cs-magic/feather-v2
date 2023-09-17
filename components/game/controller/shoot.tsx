@@ -1,63 +1,65 @@
 import React from "react"
 
+import { ShootInterval, ShootStep } from "@/config/game"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 /**
  * ref: https://stackoverflow.com/a/62637068/9422455
  */
-export const Shoot = () => {
-  let counter = 0
-  let timerinterval = React.useRef(null as unknown as any)
+export const Shoot = ({
+  onPressing,
+  onFinish,
+}: {
+  onPressing?: (t: number) => void
+  onFinish?: (t: number) => void
+}) => {
+  let timerIntervalRef = React.useRef(null as unknown as any)
 
-  const [ms, setMs] = React.useState(counter)
+  const [t, setT] = React.useState(0)
 
   const timer = (start: any) => {
-    console.log("tick tock")
-    console.log(start)
-    if (start === true && counter >= 1) {
-      timerinterval.current = setInterval(() => {
-        console.log(counter)
-        setMs(counter) //When I remove this, the infinite loop disappears.
-        counter += 1
+    if (start === true) {
+      timerIntervalRef.current = setInterval(() => {
+        setT((t) => {
+          const newT = Math.min(t + ShootStep, 1)
+          onPressing && onPressing(newT)
+          return newT
+        })
         //@ts-ignore
-      }, [10])
+      }, [ShootInterval])
     } else {
-      setMs(0)
+      setT(0)
     }
   }
 
-  const pressingDown = (e: any) => {
-    console.log("start")
+  const onPressingDown = (e: any) => {
     e.preventDefault()
-    counter = 1
     timer(true)
   }
 
-  const notPressingDown = (e: any) => {
-    console.log("stop")
+  const onPressingUp = (e: any) => {
     e.preventDefault()
     timer(false)
-    console.log("pressed: ", { ms })
-    setMs(0)
-    clearInterval(timerinterval.current)
+    console.log("pressed: ", { ms: t })
+    setT(0)
+    clearInterval(timerIntervalRef.current)
+
+    onFinish && onFinish(t)
   }
-  const n = 53
 
   return (
     <Button
-      onMouseDown={pressingDown}
-      onMouseUp={notPressingDown}
-      onTouchStart={pressingDown}
-      onTouchEnd={notPressingDown}
+      onMouseDown={onPressingDown}
+      onTouchStart={onPressingDown}
+      onMouseUp={onPressingUp}
+      onTouchEnd={onPressingUp}
       className={cn(
         "w-16 h-16 rounded-full p-6 whitespace-nowrap  text-white transition-all"
-        // "bg-cyan-800/30",
-        // `hover:bg-cyan-800/${Math.min(Math.max(30, ms), 100)}`
       )}
       style={{
-        background: `hsl(195,68%,${Math.min(Math.max(20, ms), 50)}%)`,
-        scale: 1 + Math.min(0.3, Math.log(1 + ms) / 10),
+        background: t === 1 ? "darkred" : `hsl(195,68%,${20 + t * 30}%)`,
+        scale: 1 + Math.min(0.3, Math.log(1 + t)),
       }}
     >
       蓄力

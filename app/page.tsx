@@ -4,36 +4,31 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
-import { Joystick } from "react-joystick-component"
-import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
 
-import {
-  FeatherRenderInterval,
-  MainPlayerDefaultSpeed,
-  MainPlayerMaxX,
-  MainPlayerMinX,
-} from "@/config/game"
-import useInterval from "@/hooks/interval"
+import { FeatherRenderInterval } from "@/config/game"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import { JoystickController } from "@/components/game/controller/joystick"
 import { Shoot } from "@/components/game/controller/shoot"
-import { FeatherManager } from "@/components/game/feather-manager"
+import { Feather } from "@/components/game/feather"
+import { FeatherManager, toUserPos } from "@/components/game/feather-manager"
 import { MainPlayer } from "@/components/game/main-player"
 import { Player } from "@/components/game/player"
 
 export default function IndexPage() {
   const [tick, setTick] = useState(0)
-  const [nPlayers, setNPlayers] = useState(2)
-  const mainPlayerIndex = 0
+  const [n, setN] = useState(2)
+  const k = 0
 
-  const featherManager = useRef(new FeatherManager())
+  const featherManager = useRef(new FeatherManager(n))
 
   const { ref, width, height } = useElementSize()
-  const { setViewPointWidth } = useAppStore()
+
+  const { setViewPointWidth, setViewPointHeight, playerX } = useAppStore()
+
   useEffect(() => {
     setViewPointWidth(width)
-  }, [width])
+    setViewPointHeight(height)
+  }, [width, height])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -65,22 +60,13 @@ export default function IndexPage() {
         </div>
       )}
 
-      {featherManager.current.toUser(mainPlayerIndex).map((feather, index) => (
-        <Image
-          key={index}
-          src={"/game/feather/feather.png"}
-          alt={"element"}
-          className={"absolute"}
-          width={120}
-          height={60}
-          style={{
-            left: width * feather.x,
-            top: height * feather.y,
-          }}
-        />
-      ))}
+      {featherManager.current.feathers
+        .map((polarPos) => toUserPos(polarPos, k, n))
+        .map((cartesianPos, index) => (
+          <Feather key={index} pos={cartesianPos} />
+        ))}
 
-      <Player player={{ blow: "/game/player/A/blow.png", pos: "top" }} />
+      <Player blow="/game/player/A/blow.png" pos="top" x={0.5} />
 
       <MainPlayer />
 
@@ -89,7 +75,21 @@ export default function IndexPage() {
       </div>
 
       <div className={"absolute right-8 bottom-8"}>
-        <Shoot />
+        <Shoot
+          onPressing={(t) => {}}
+          onFinish={(t) => {
+            featherManager.current.feathers.forEach((feather) => {
+              const { x, y } = toUserPos(feather, k, n)
+
+              console.log({ playerX, t, x, y })
+              if (y > 0.9 - t / 10) {
+                if (Math.abs(playerX - x) < 0.1) {
+                  feather.invert = true
+                }
+              }
+            })
+          }}
+        />
       </div>
     </section>
   )
