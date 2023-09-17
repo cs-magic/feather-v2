@@ -78,4 +78,21 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+
+
+  #point{
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.85;
+    border: 1px solid #000;
+    height: 50px;
+    width: 50px;
+    background-color: aqua;
+    z-index:1;
+  }
+  .nipple {
+    border: 1px solid #000;
+  }
 }
+
