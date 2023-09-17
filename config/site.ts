@@ -1,9 +1,9 @@
 export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
-  name: "Next.js",
+  name: "李佳琦吹羽毛",
   description:
-    "Beautifully designed components built with Radix UI and Tailwind CSS.",
+    "吹啊吹啊 我的驕傲放縱 吹啊吹不毀我純淨花園 任風吹 任它亂 毀不滅是我 盡頭的展望",
   mainNav: [
     {
       title: "Home",
@@ -11,8 +11,6 @@ export const siteConfig = {
     },
   ],
   links: {
-    twitter: "https://twitter.com/shadcn",
-    github: "https://github.com/shadcn/ui",
-    docs: "https://ui.shadcn.com",
+    github: "https://github.com/cs-magic/ljq-feather",
   },
 }
