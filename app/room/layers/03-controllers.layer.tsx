@@ -3,11 +3,13 @@ import { useAppStore } from "@/store"
 import { JoystickController } from "@/components/game/controller/joystick"
 import { Shoot } from "@/components/game/controller/shoot"
 import { toUserPos } from "@/components/game/feather-manager"
+import { Timer } from "@/components/timer"
+import Layer from "@/app/room/layers/Layer"
 
 export default function ControllersLayer() {
   const { playerX } = useAppStore()
   return (
-    <>
+    <Layer>
       <div className={"left-8 bottom-8 hidden"}>
         <JoystickController />
       </div>
@@ -28,6 +30,6 @@ export default function ControllersLayer() {
           }}
         />
       </div>
-    </>
+    </Layer>
   )
 }

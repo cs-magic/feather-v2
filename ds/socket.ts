@@ -1,8 +1,17 @@
 export interface IMsg {
-  content: string
+  // type: SocketEvent
+  content?: string
+}
+
+export interface IRoomMsg extends IMsg {
+  roomId: string
 }
 
 export enum SocketEvent {
+  // general
   General = "General",
+
+  // room
   UserJoinRoom = "UserJoinRoom",
+  UserLeaveRoom = "UserLeaveRoom",
 }

@@ -1,6 +1,6 @@
 import { Server as NetServer } from "http"
 import { NextApiRequest } from "next"
-import { IMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, IRoomMsg, SocketEvent } from "@/ds/socket"
 import { Server } from "socket.io"
 
 import { NextApiResponseServerIO } from "@/types/socket"
@@ -29,12 +29,22 @@ export default async function handler(
 
     io.on("connection", (socket) => {
       console.log("onConnection")
+
+      socket.on("disconnecting", () => {
+        console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
+      })
+
       socket.on(SocketEvent.General, (msg: IMsg) => {
         console.log(`received general msg: ${JSON.stringify(msg)}`)
       })
 
-      socket.on(SocketEvent.UserJoinRoom, (msg: IMsg) => {
-        socket.broadcast.emit(SocketEvent.UserJoinRoom, msg)
+      socket.on(SocketEvent.UserJoinRoom, (msg: IRoomMsg) => {
+        socket.join(msg.roomId)
+        socket.to(msg.roomId).emit(SocketEvent.UserJoinRoom, msg)
+      })
+
+      socket.on(SocketEvent.UserLeaveRoom, (msg: IRoomMsg) => {
+        socket.to(msg.roomId).emit(SocketEvent.UserJoinRoom, msg)
       })
     })
 

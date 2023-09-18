@@ -1,12 +1,15 @@
 import "@/styles/globals.css"
-import { PropsWithChildren } from "react"
+import React, { PropsWithChildren } from "react"
 import { Metadata } from "next"
+import { ToastContainer, Zoom } from "react-toastify"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
+
+import "react-toastify/dist/ReactToastify.css"
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +42,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             {children}
             <TailwindIndicator />
+            {/*<Toaster richColors closeButton position="top-right" />*/}
+            <ToastContainer hideProgressBar transition={Zoom} />
           </ThemeProvider>
         </body>
       </html>

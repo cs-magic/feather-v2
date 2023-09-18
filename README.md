@@ -14,6 +14,7 @@ yarn && yarn dev
 - zustand 的 ssr 问题依旧还没能解决，参考：zustand persist with ssr, see: https://github.com/pmndrs/zustand/issues/938
   - 不过有一种办法可以简单避免 hydration error，具体参考：https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
     - 详见 `components/game/main-player.tsx`
+- `sonner` 貌似不支持 nextjs13 的 app layout，换 `react-toastify`了
 
 ## ref
 

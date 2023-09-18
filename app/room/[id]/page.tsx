@@ -1,18 +1,18 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { IMsg, SocketEvent } from "@/ds/socket"
-import { useAppStore } from "@/store"
-import { useElementSize } from "@mantine/hooks"
-import { Socket, io } from "socket.io-client"
+import { IMsg, IRoomMsg, SocketEvent } from "@/ds/socket"
+import { toast } from "react-toastify"
+import { Socket, connect, io } from "socket.io-client"
+
+// import { toast } from "sonner"
 
 import { FeatherRenderInterval } from "@/config/game"
 import { SOCKET_IO_ENDPOINT } from "@/config/site"
 import useInterval from "@/hooks/interval"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Feather } from "@/components/game/feather"
 import { FeatherManager, toUserPos } from "@/components/game/feather-manager"
+import GroundLayer from "@/app/room/layers/01-ground.layer"
 import DialogLayer from "@/app/room/layers/04-dialog.layer"
 import Layer from "@/app/room/layers/Layer"
 
@@ -26,7 +26,7 @@ export default function RoomPage({
   const [socket, setSocket] = useState<Socket>()
 
   const socketInitializer = async () => {
-    const socket = io({
+    const socket = connect({
       path: SOCKET_IO_ENDPOINT,
     })
 
@@ -37,6 +37,17 @@ export default function RoomPage({
     socket.on("connect", () => {
       console.log("SOCKET CONNECTED!", socket.id)
       setConnected(true)
+
+      console.log("joining room ...")
+      socket.emit(SocketEvent.UserJoinRoom, {
+        roomId,
+        content: `user ${socket.id} joined room`,
+      } as IRoomMsg)
+    })
+
+    socket.on(SocketEvent.UserJoinRoom, (msg: IRoomMsg) => {
+      console.log("someone joined room: ", msg.content)
+      toast(msg.content)
     })
 
     setSocket(socket)
@@ -66,13 +77,7 @@ export default function RoomPage({
 
   return (
     <>
-      <Layer>
-        <div className={"w-full h-full flex flex-col grow"}>
-          <div className={"grow"} />
-          <Separator orientation={"horizontal"} />
-          <div className={"grow"} />
-        </div>
-      </Layer>
+      <GroundLayer />
 
       <Layer>
         {featherManager.current.feathers
@@ -84,9 +89,7 @@ export default function RoomPage({
 
       {/*<ControllersLayer/>*/}
 
-      <Layer>
-        <DialogLayer state={featherManager.current.state} />
-      </Layer>
+      <DialogLayer state={featherManager.current.state} />
     </>
   )
 }
