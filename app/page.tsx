@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Image from "next/image"
 import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 

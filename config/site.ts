@@ -14,3 +14,9 @@ export const siteConfig = {
     github: "https://github.com/cs-magic/ljq-feather",
   },
 }
+
+export const SOCKET_IO_URL =
+  process.env.NODE_ENV === "production"
+    ? "wss://ljq.cs-magic.cn"
+    : "ws://localhost:3000"
+export const SOCKET_IO_ENDPOINT = "/api/socket"
