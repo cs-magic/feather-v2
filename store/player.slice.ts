@@ -7,10 +7,8 @@
 import { type StoreSlice } from "@/store/index"
 
 export interface PlayerState {
-  playerSpeed: number
-  setPlayerSpeed: (v: number) => void
   playerX: number
-  setPlayerX: (v: number) => void
+  setPlayerX: (v: Function) => void
 }
 
 export const createPlayerSlice: StoreSlice<PlayerState> = (
@@ -18,14 +16,9 @@ export const createPlayerSlice: StoreSlice<PlayerState> = (
   getState,
   store
 ) => ({
-  playerSpeed: 0,
-  setPlayerSpeed: (v) =>
-    setState((state) => {
-      state.playerSpeed = v
-    }),
   playerX: 0.5, // 居中
   setPlayerX: (v) =>
     setState((state) => {
-      state.playerX = v
+      state.playerX = v()
     }),
 })

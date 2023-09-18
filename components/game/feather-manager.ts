@@ -10,7 +10,7 @@ export type GameState = "waiting" | "playing" | "pause" | "stopped"
 
 export class FeatherManager {
   public n: number = 2
-  public state: GameState
+  public state: GameState = "waiting"
   public feathers: IPolarPos[] = []
 
   private addFeather = () => {
@@ -23,31 +23,41 @@ export class FeatherManager {
     })
   }
 
-  constructor(nPlayers: number = 2) {
-    this.n = nPlayers
+  private addFeatherInterval = setInterval(() => {
+    if (this.state === "playing") {
+      this.addFeather()
+    }
+  }, FeatherAddInterval)
+
+  private updateFeathersInterval = setInterval(() => {
+    if (this.state === "playing") {
+      this.feathers.forEach((feature) => {
+        if (feature.r >= 1) {
+          this.state = "stopped"
+        } else {
+          feature.r +=
+            ((feature.invert ? -1 : 1) * FeatherSpeed * FeatherUpdateInterval) /
+            1000
+        }
+      })
+    }
+  }, FeatherUpdateInterval)
+
+  public start() {
     this.state = "playing"
     this.addFeather()
+  }
 
-    const addFeatherInterval = setInterval(() => {
-      this.addFeather()
-    }, FeatherAddInterval)
+  public pause() {
+    this.state = "pause"
+  }
 
-    setInterval(() => {
-      if (this.state === "playing") {
-        this.feathers.forEach((feature) => {
-          if (feature.r >= 1) {
-            this.state = "stopped"
-            clearInterval(addFeatherInterval)
-          } else {
-            feature.r +=
-              ((feature.invert ? -1 : 1) *
-                FeatherSpeed *
-                FeatherUpdateInterval) /
-              1000
-          }
-        })
-      }
-    }, FeatherUpdateInterval)
+  public resume() {
+    this.state = "playing"
+  }
+
+  constructor(nPlayers: number = 2) {
+    this.n = nPlayers
   }
 }
 
