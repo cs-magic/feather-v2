@@ -1,0 +1,44 @@
+import { useEffect } from "react"
+import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { Socket, connect } from "socket.io-client"
+
+import { SOCKET_IO_ENDPOINT } from "@/config/site"
+
+let socket: Socket
+
+socket = connect({
+  path: SOCKET_IO_ENDPOINT,
+})
+socket.on("connect_error", (err) => {
+  console.error(`connect_error`, err)
+})
+
+socket.on("connect", () => {
+  console.log("SOCKET CONNECTED!!! ", socket.id)
+})
+
+export default socket
+
+export const disconnectSocket = () => {
+  console.log("Disconnecting socket...")
+  if (socket) socket.disconnect()
+}
+
+export interface Event {
+  name: string
+  handler(...args: any[]): any
+}
+
+export function useSocketEvents(events: Event[]) {
+  useEffect(() => {
+    for (const event of events) {
+      socket.on(event.name, event.handler)
+    }
+
+    return function () {
+      for (const event of events) {
+        socket.off(event.name)
+      }
+    }
+  }, [])
+}

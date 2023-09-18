@@ -9,6 +9,9 @@ import { type StoreSlice } from "@/store/index"
 export interface PlayerState {
   playerX: number
   setPlayerX: (v: Function | number) => void
+
+  roomId: string | undefined
+  setRoomId: (v: string | undefined) => void
 }
 
 export const createPlayerSlice: StoreSlice<PlayerState> = (
@@ -20,5 +23,11 @@ export const createPlayerSlice: StoreSlice<PlayerState> = (
   setPlayerX: (v) =>
     setState((state) => {
       state.playerX = typeof v === "number" ? v : v()
+    }),
+
+  roomId: undefined,
+  setRoomId: (v) =>
+    setState((state) => {
+      state.roomId = v
     }),
 })

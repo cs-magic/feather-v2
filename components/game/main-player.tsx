@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { IRoomMsg, SocketEvent } from "@/ds/socket"
 import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 import { animated, useSpring } from "@react-spring/web"
@@ -8,11 +9,12 @@ import { useDrag } from "@use-gesture/react"
 
 import { limitRange } from "@/lib/range"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { Player } from "@/components/game/player"
 import { Timer } from "@/components/timer"
 
 export const MainPlayer = () => {
-  const { viewPointWidth } = useAppStore()
+  const { viewPointWidth, roomId } = useAppStore()
   const xkey = "marginLeft"
   const left = viewPointWidth >> 1
   const [style, api] = useSpring(() => ({ [xkey]: left }), [])
@@ -63,6 +65,10 @@ export const MainPlayer = () => {
           <Player blow="/game/player/B/blow.png" />
         </Timer>
       </animated.div>
+
+      <Button className={"absolute right-2 bottom-2"} onClick={() => {}}>
+        准备
+      </Button>
     </div>
   )
 }

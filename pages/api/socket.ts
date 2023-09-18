@@ -46,6 +46,16 @@ export default async function handler(
       socket.on(SocketEvent.UserLeaveRoom, (msg: IRoomMsg) => {
         socket.to(msg.roomId).emit(SocketEvent.UserJoinRoom, msg)
       })
+
+      socket.on(SocketEvent.UserPrepared, async (msg: IRoomMsg) => {
+        socket.to(msg.roomId).emit(SocketEvent.UserPrepared, msg)
+        const sockets = await io.in(msg.roomId).fetchSockets()
+        console.log({ sockets })
+      })
+
+      socket.on(SocketEvent.UserUnPrepare, async (msg: IRoomMsg) => {
+        socket.to(msg.roomId).emit(SocketEvent.UserUnPrepare, msg)
+      })
     })
 
     // append SocketIO server to Next.js socket server response

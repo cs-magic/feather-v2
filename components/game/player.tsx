@@ -22,6 +22,7 @@ export const Player = ({ blow, life = 3 }: IPlayer) => {
         width={120}
         height={360}
         className={cn("w-full pointer-events-none")}
+        priority
       />
 
       <div className={"absolute right-2 top-2 inline-flex items-center gap-1"}>

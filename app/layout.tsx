@@ -10,6 +10,9 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 
 import "react-toastify/dist/ReactToastify.css"
+import { SocketEvent } from "@/ds/socket"
+
+import { useSocketEvents } from "@/hooks/socket"
 
 export const metadata: Metadata = {
   title: {

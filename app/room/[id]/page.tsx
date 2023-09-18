@@ -1,15 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { IMsg, IRoomMsg, SocketEvent } from "@/ds/socket"
-import { toast } from "react-toastify"
-import { Socket, connect, io } from "socket.io-client"
-
-// import { toast } from "sonner"
+import { IRoomMsg, SocketEvent } from "@/ds/socket"
 
 import { FeatherRenderInterval } from "@/config/game"
-import { SOCKET_IO_ENDPOINT } from "@/config/site"
+import { socket } from "@/lib/socket"
 import useInterval from "@/hooks/interval"
+import { useSocketEvents } from "@/hooks/socket"
 import { Feather } from "@/components/game/feather"
 import { FeatherManager, toUserPos } from "@/components/game/feather-manager"
 import GroundLayer from "@/app/room/layers/01-ground.layer"
@@ -21,46 +18,6 @@ export default function RoomPage({
 }: {
   params: { id: string }
 }) {
-  const [connected, setConnected] = useState<boolean>(false)
-
-  const [socket, setSocket] = useState<Socket>()
-
-  const socketInitializer = async () => {
-    const socket = connect({
-      path: SOCKET_IO_ENDPOINT,
-    })
-
-    socket.on("connect_error", (err) => {
-      console.error(`connect_error`, err)
-    })
-
-    socket.on("connect", () => {
-      console.log("SOCKET CONNECTED!", socket.id)
-      setConnected(true)
-
-      console.log("joining room ...")
-      socket.emit(SocketEvent.UserJoinRoom, {
-        roomId,
-        content: `user ${socket.id} joined room`,
-      } as IRoomMsg)
-    })
-
-    socket.on(SocketEvent.UserJoinRoom, (msg: IRoomMsg) => {
-      console.log("someone joined room: ", msg.content)
-      toast(msg.content)
-    })
-
-    setSocket(socket)
-
-    if (socket) return socket.disconnect
-  }
-
-  const sendMessage = (msg: IMsg) => {
-    socket?.emit(SocketEvent.General, msg)
-  }
-
-  useEffect(() => void socketInitializer(), [])
-
   const [tick, setTick] = useState(0)
   const [n, setN] = useState(2)
   const k = 0
@@ -74,6 +31,13 @@ export default function RoomPage({
   useInterval(() => {
     setTick((tick) => tick + 1)
   }, FeatherRenderInterval)
+
+  useEffect(() => {
+    void socket.emit(SocketEvent.UserJoinRoom, {
+      content: `user ${""} joined room ${roomId}`,
+    } as IRoomMsg)
+    // socket?.emit(SocketEvent.UserJoinRoom, )
+  }, [])
 
   return (
     <>

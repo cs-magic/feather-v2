@@ -1,0 +1,11 @@
+import React, { PropsWithChildren } from "react"
+import socketio from "socket.io-client"
+
+import { SOCKET_IO_ENDPOINT } from "@/config/site"
+
+export const socket = socketio({ path: SOCKET_IO_ENDPOINT })
+const SocketContext = React.createContext(socket)
+
+export const SocketProvider = SocketContext.Provider
+export const SocketConsumer = SocketContext.Consumer
+export default SocketContext

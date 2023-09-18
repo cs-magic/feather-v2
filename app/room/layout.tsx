@@ -1,22 +1,23 @@
 "use client"
 
-import { PropsWithChildren, useEffect } from "react"
-import { useAppStore } from "@/store"
-import { useElementSize } from "@mantine/hooks"
+import { PropsWithChildren } from "react"
+import { SocketEvent } from "@/ds/socket"
 
+import { useSocketEvents } from "@/hooks/socket"
 import { Separator } from "@/components/ui/separator"
 import { MainPlayer } from "@/components/game/main-player"
 import { Player } from "@/components/game/player"
+import { BattleArea } from "@/app/room/battel"
 
 export default function GameLayout({ children }: PropsWithChildren) {
-  const { ref, width, height } = useElementSize()
-
-  const { setViewPointWidth, setViewPointHeight, playerX } = useAppStore()
-
-  useEffect(() => {
-    setViewPointWidth(width)
-    setViewPointHeight(height)
-  }, [width, height])
+  useSocketEvents([
+    {
+      name: SocketEvent.UserJoinRoom,
+      handler: (...args) => {
+        console.log("UserJoinRoom: ", { args })
+      },
+    },
+  ])
 
   return (
     <div
@@ -30,9 +31,7 @@ export default function GameLayout({ children }: PropsWithChildren) {
         </div>
         <Separator orientation={"horizontal"} />
 
-        <div className={"grow relative"} ref={ref}>
-          {children}
-        </div>
+        <BattleArea>{children}</BattleArea>
 
         <Separator orientation={"horizontal"} />
         <MainPlayer />
