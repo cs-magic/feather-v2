@@ -51,13 +51,8 @@ export class GameRoom {
     this.sync()
   }
 
-  public memberDisconnect() {
-    delete this.members[this.members.findIndex((p) => !p.id)]
-    this.sync()
-  }
-
-  public memberLeave(playerId: string) {
-    delete this.members[this.members.findIndex((p) => p.id === playerId)]
+  public memberLeave(playerId?: string) {
+    this.members = this.members.filter((p) => p.id && p.id !== playerId)
     this.sync()
   }
 

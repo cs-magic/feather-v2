@@ -33,16 +33,18 @@ export default async function handler(
     const server = new Server(httpServer, {
       path: SOCKET_IO_ENDPOINT,
       addTrailingSlash: false, // ref: https://github.com/vercel/next.js/issues/49334
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
     })
 
     server.on("connection", (socket) => {
-      console.log("onConnection")
-
       socket.on("disconnecting", () => {
         console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
         socket.rooms.forEach((r) => {
           if (r in gameManager) {
-            gameManager[r].memberDisconnect()
+            gameManager[r].memberLeave(socket.id)
           }
         })
       })
@@ -52,7 +54,7 @@ export default async function handler(
       })
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IRoomMsg & IUserMsg) => {
-        console.log(SocketEvent.UserJoinRoom, msg)
+        console.log(SocketEvent.UserJoinRoom, socket.id)
         const { roomId, id = socket.id, image } = msg
         await socket.join(roomId) // 这里要等待！
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom

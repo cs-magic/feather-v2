@@ -7,6 +7,9 @@
 import { type StoreSlice } from "@/store/index"
 
 export interface UserState {
+  userId?: string
+  setUserId: (v: string | undefined) => void
+
   userImage: string
   setUserImage: (v: string) => void
 }
@@ -16,6 +19,12 @@ export const createUserSlice: StoreSlice<UserState> = (
   getState,
   store
 ) => ({
+  userId: undefined,
+  setUserId: (v) =>
+    setState((state) => {
+      state.userId = v
+    }),
+
   userImage: "/game/player/A/blow.png", // 居中
   setUserImage: (v) =>
     setState((state) => {

@@ -1,100 +1,52 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { useRef } from "react"
 import { useAppStore } from "@/store"
-import { useElementSize } from "@mantine/hooks"
 import { toast } from "react-toastify"
 
-import { GameUpdateClientInterval } from "@/config/game"
-import { GameState, toUserPos } from "@/lib/game"
-import { socket } from "@/lib/socket"
-import useInterval from "@/hooks/interval"
-import { useSocketEvents } from "@/hooks/socket"
-import { Separator } from "@/components/ui/separator"
-import { Feather } from "@/components/game/feather"
-import { MainPlayer, SubPlayer } from "@/components/game/player"
-import GroundLayer from "@/app/room/layers/01-ground.layer"
-import DialogLayer from "@/app/room/layers/04-dialog.layer"
-import Layer from "@/app/room/layers/Layer"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { WithPlayerId } from "@/app/room/[id]/auth"
 
 export default function RoomPage({
   params: { id: roomId },
 }: {
   params: { id: string }
 }) {
-  const [tick, setTick] = useState(0)
-  const k = 0
+  const { userId, setUserId } = useAppStore()
+  const ref = useRef<HTMLInputElement>(null)
 
-  const [game, setGame] = useState<GameState>()
+  if (!userId) {
+    return (
+      <form
+        className={
+          "w-[320px] mx-auto h-full | flex  justify-center gap-2 flex-col"
+        }
+        onSubmit={async (event) => {
+          event.preventDefault()
 
-  const { ref, width, height } = useElementSize()
+          const v = ref.current?.value
+          if (!v) return
+          const res = await fetch(`/api/user?username=${v}`)
+          console.log({ res })
 
-  const { setViewPointWidth, setViewPointHeight, userImage } = useAppStore()
-  const mainPlayer = game?.members.filter((m) => m.id === socket.id)[0]
+          if (!res.ok) {
+            const { message } = await res.json()
+            toast.error(message)
+          } else {
+            toast.success(`欢迎 👏 ${v} 👏🏻 体验全世界最无聊的吹羽毛游戏！`)
+            setUserId(v)
+          }
+        }}
+      >
+        <Label>请输入您的用户名：</Label>
+        <Input ref={ref} placeholder={"宇智波佐助"} defaultValue={userId} />
+        <Button type={"submit"}>OK</Button>
+      </form>
+    )
+  }
 
-  useInterval(() => {
-    if (game?.state === "playing") {
-      setTick((tick) => tick + 1)
-    }
-  }, GameUpdateClientInterval)
-
-  useSocketEvents(
-    [
-      {
-        name: SocketEvent.UserJoinRoom,
-        handler: (msg: IRoomMsg) => {
-          console.log("UserJoinRoom: ", msg)
-          toast(msg.content)
-        },
-      },
-      {
-        name: SocketEvent.Game,
-        handler: (msg: GameState) => {
-          console.log("synced game: ", msg)
-          setGame(msg)
-        },
-      },
-    ],
-    { roomId, image: userImage }
-  )
-
-  useEffect(() => {
-    setViewPointWidth(width)
-    setViewPointHeight(height)
-  }, [width, height])
-
-  const n = (game?.members.length ?? 0) - 1
-
-  return (
-    <div className={"absolute inset-0 w-full h-full flex flex-col"}>
-      <div className={"w-full flex items-end"}>
-        {game?.members
-          .filter((m) => m.id !== socket.id)
-          .map((m) => (
-            <div className={"grow basis-0"} key={m.id}>
-              <SubPlayer key={m.id} {...m} />
-            </div>
-          ))}
-      </div>
-      <Separator orientation={"horizontal"} />
-
-      <div className={"grow relative"} ref={ref}>
-        <GroundLayer />
-
-        <Layer>
-          {game?.feathers
-            .map((polarPos) => toUserPos(polarPos, k, n))
-            .map((cartesianPos, index) => (
-              <Feather key={index} pos={cartesianPos} />
-            ))}
-        </Layer>
-
-        <DialogLayer state={game?.state ?? "waiting"} />
-      </div>
-
-      <Separator orientation={"horizontal"} />
-      {mainPlayer && <MainPlayer roomId={roomId} player={mainPlayer} />}
-    </div>
-  )
+  console.log({ userId })
+  return <WithPlayerId roomId={roomId} playerId={userId} />
 }

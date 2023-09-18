@@ -17,6 +17,7 @@ export const siteConfig = {
 
 export const SOCKET_IO_URL =
   process.env.NODE_ENV === "production"
-    ? "wss://ljq.cs-magic.cn"
-    : "ws://localhost:3000"
-export const SOCKET_IO_ENDPOINT = "/api/socket"
+    ? "https://ljq.cs-magic.cn"
+    : "http://localhost:3000"
+export const SOCKET_IO_ENDPOINT = undefined
+// "/api/socket"

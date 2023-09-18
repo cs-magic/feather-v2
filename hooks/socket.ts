@@ -26,7 +26,10 @@ export function useSocketEvents(
   const { roomId, image } = extra
   const allEvents: Event[] = [...defaultEvents, ...events]
 
-  useEffect(() => {
+  const init = async () => {
+    // 要先唤醒一下服务器
+    await fetch("/api/socket")
+
     // no-op if the socket is already connected
     console.log("connecting")
     socket.connect()
@@ -57,5 +60,9 @@ export function useSocketEvents(
         socket.off(event.name)
       }
     }
+  }
+
+  useEffect(() => {
+    void init()
   }, [])
 }

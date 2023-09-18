@@ -81,6 +81,13 @@ export const PlayerInner = ({ id, image, life = 3, x, state }: IPlayer) => {
       </AspectRatio>
 
       <PlayerStateComp state={state} life={life} />
+      <div
+        className={
+          "absolute bottom-0 w-full bg-cyan-900 text-center text-xs truncate px-2"
+        }
+      >
+        {id}
+      </div>
     </div>
   )
 }
