@@ -15,28 +15,30 @@ export const MainPlayer = () => {
   const { viewPointWidth } = useAppStore()
   const xkey = "marginLeft"
   const left = viewPointWidth >> 1
-  const [style, api] = useSpring(
-    () => ({
-      [xkey]: left, //playerX ?? viewPointWidth * 0.5,
-    }),
-    []
-  )
+  const [style, api] = useSpring(() => ({ [xkey]: left }), [])
+  const [isMoving, setMoving] = useState(false)
+  const [t, setT] = useState(0)
 
   const { ref, width } = useElementSize()
 
-  const bind = useDrag(({ active, offset: [mx, my] }) => {
+  const bind = useDrag(({ active, movement: [mx, my], offset: [ox, oy] }) => {
+    if (!active) {
+      setMoving(false)
+    }
+    if (active && Math.abs(mx) > 10) {
+      setMoving(true)
+    }
     const pw = width >> 1
-    console.log({ left, mx, viewPointWidth })
+    console.log({ active, left, mx: ox, viewPointWidth })
     api.start({
-      [xkey]: limitRange(left + mx, { l: pw, r: viewPointWidth - pw }),
+      [xkey]: limitRange(left + ox, { l: pw, r: viewPointWidth - pw }),
     })
   }, {})
-
-  const [t, setT] = useState(0)
 
   const onFinish = (t: number) => {
     setT(0)
   }
+  const pressedT = isMoving ? 0 : t
 
   return (
     <div className={"w-full relative"}>
@@ -50,12 +52,12 @@ export const MainPlayer = () => {
         suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
       >
         <Timer
-          onFinish={setT}
+          onFinish={onFinish}
           onPressing={setT}
           style={{
             /* offset-x | offset-y | [ blur-radius | spread-radius | ] color */
-            boxShadow: `0px -${t}px ${t}px 0px rgba(200, 20, 20, 70%)`,
-            scale: 1 - Math.min(t, 300) / 500,
+            boxShadow: `0px -${pressedT}px ${pressedT}px ${pressedT}px rgba(200, 20, 20, 70%)`,
+            scale: 1 - Math.min(pressedT, 300) / 500,
           }}
         >
           <Player blow="/game/player/B/blow.png" />

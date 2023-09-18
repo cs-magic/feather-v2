@@ -20,7 +20,7 @@ export const Timer = ({ onPressing, onFinish, ...props }: ITimer) => {
 
     timerIntervalRef.current = setInterval(() => {
       setT((t) => {
-        console.log({ t })
+        // console.log({ t })
         const tt = t + ShootInterval
         onPressing && onPressing(tt)
         return tt
