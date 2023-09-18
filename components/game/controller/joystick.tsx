@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useAppStore } from "@/store"
-import { useInterval } from "@mantine/hooks"
 import { Joystick } from "react-joystick-component"
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
 
@@ -9,6 +8,7 @@ import {
   MainPlayerMinX,
   MainPlayerSpeedMultiplier,
 } from "@/config/game"
+import useInterval from "@/hooks/interval"
 
 export const JoystickController = () => {
   const [playerSpeed, setPlayerSpeed] = useState(0)
@@ -21,30 +21,20 @@ export const JoystickController = () => {
 
   const handleStop = (event: IJoystickUpdateEvent) => {
     setPlayerSpeed(0)
-    console.log("stop: ", event)
+    // console.log("stop: ", event)
   }
 
-  const interval = useInterval(() => {
-    console.log({ playerSpeed })
-    setPlayerX(() => {
-      let x = playerX
-      // console.log({ x, playerSpeed })
-      if (playerSpeed) {
+  useInterval(() => {
+    if (playerSpeed) {
+      setPlayerX(() => {
+        let x = playerX
         x += playerSpeed * MainPlayerSpeedMultiplier
         x = Math.max(x, MainPlayerMinX)
         x = Math.min(x, MainPlayerMaxX)
-        // console.log({ playerSpeed, x })
-      }
-      return x
-    })
+        return x
+      })
+    }
   }, 20) // 50fps
-
-  useEffect(() => {
-    interval.start()
-    return interval.stop
-  }, [])
-
-  // console.log({ playerSpeed, playerX })
 
   return (
     <Joystick
