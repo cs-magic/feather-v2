@@ -112,21 +112,34 @@ export const MainPlayer = ({
   const { viewPointWidth } = useAppStore()
   const xkey = "marginLeft"
   const left = viewPointWidth >> 1
-  const [style, api] = useSpring(() => ({ [xkey]: left }), [])
   const [isMoving, setMoving] = useState(false)
   const [t, setT] = useState(0)
 
+  const { ref, width } = useElementSize()
+  const { ref: refImage, width: imageWidth } = useElementSize()
+
+  const [style, api] = useSpring(() => ({ marginLeft: width >> 1 }), [])
   const bind = useDrag(({ active, movement: [mx, my], offset: [ox, oy] }) => {
-    if (!active) {
-      setMoving(false)
-    }
-    if (active && Math.abs(mx) > 10) {
-      setMoving(true)
-    }
-    const pw = width >> 1
-    console.log({ active, left, mx: ox, viewPointWidth })
+    // if (!active) {
+    //   setMoving(false)
+    // }
+    // if (active && Math.abs(mx) > 10) {
+    //   setMoving(true)
+    // }
+
+    const pw = imageWidth / 2
+    const marginLeft = limitRange(style.marginLeft.get() + mx, {
+      l: pw,
+      r: width - pw,
+    })
+
+    console.log({ ...style, mx, marginLeft })
+    // const pw = width >> 1
+    // console.log({ active, left, mx: ox, viewPointWidth })
     api.start({
-      [xkey]: limitRange(left + ox, { l: pw, r: viewPointWidth - pw }),
+      // x: newX,
+      marginLeft,
+      // [xkey]: limitRange(left + ox, { l: pw, r: viewPointWidth - pw }),
     })
   }, {})
 
@@ -135,38 +148,29 @@ export const MainPlayer = ({
   }
   const pressedT = isMoving ? 0 : t
 
-  const { ref, width } = useElementSize()
-
   return (
     <div className={"shrink-0 w-full relative"} ref={ref}>
-      <div
-        className={"relative w-1/2 max-w-[120px] select-none -translate-x-1/2"}
-        style={{
-          marginLeft: width * (player.x ?? 0.5),
-        }}
+      <animated.div
+        className="relative w-1/2 max-w-[120px] -translate-x-1/2 select-none touch-none z-50"
+        style={{ marginLeft: style.marginLeft }}
+        ref={refImage}
+        {...bind()}
+        suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
       >
-        <animated.div
-          ref={ref}
-          {...bind()}
-          // style={{
-          //   ...style,
-          // }}
-          className={cn(" select-none touch-none z-50")}
-          suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
-        >
-          <Timer
-            onFinish={onFinish}
-            onPressing={setT}
-            style={{
-              /* offset-x | offset-y | [ blur-radius | spread-radius | ] color */
-              boxShadow: `0px -${pressedT}px ${pressedT}px ${pressedT}px rgba(200, 20, 20, 70%)`,
-              scale: 1 - Math.min(pressedT, 300) / 500,
-            }}
-          >
-            <PlayerInner {...player} />
-          </Timer>
-        </animated.div>
-      </div>
+        {/*<Timer*/}
+        {/*  onFinish={onFinish}*/}
+        {/*  onPressing={setT}*/}
+        {/*  style={*/}
+        {/*    {*/}
+        {/*      // offset-x | offset-y | [ blur-radius | spread-radius | ] color*/}
+        {/*      boxShadow: `0px -${pressedT}px ${pressedT}px ${pressedT}px rgba(200, 20, 20, 70%)`,*/}
+        {/*      scale: 1 - Math.min(pressedT, 300) / 500,*/}
+        {/*    }*/}
+        {/*  }*/}
+        {/*>*/}
+        <PlayerInner {...player} />
+        {/*</Timer>*/}
+      </animated.div>
 
       <Button
         className={"absolute right-2 bottom-2"}
