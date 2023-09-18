@@ -5,6 +5,7 @@ import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 
 import { FeatherRenderInterval } from "@/config/game"
+import useInterval from "@/hooks/interval"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { JoystickController } from "@/components/game/controller/joystick"
 import { Shoot } from "@/components/game/controller/shoot"
@@ -29,18 +30,11 @@ export default function IndexPage() {
     setViewPointHeight(height)
   }, [width, height])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick((tick) => tick + 1)
-      if (featherManager.current.state === "stopped") {
-        clearInterval(interval)
-      }
-    }, FeatherRenderInterval)
+  useInterval(() => {
+    setTick((tick) => tick + 1)
+  }, FeatherRenderInterval)
 
-    return () => clearInterval(interval)
-  }, [])
-
-  // console.log({ tick })
+  // console.log({ width })
 
   return (
     <section className="relative w-full h-full" ref={ref}>
@@ -65,15 +59,17 @@ export default function IndexPage() {
           <Feather key={index} pos={cartesianPos} />
         ))}
 
-      <Player blow="/game/player/A/blow.png" pos="top" x={0.5} />
+      <div className={"absolute top-0 left-[50%] w-[20%] -translate-x-1/2"}>
+        <Player blow="/game/player/A/blow.png" />
+      </div>
 
       <MainPlayer />
 
-      <div className={"absolute left-8 bottom-8"}>
+      <div className={"absolute left-8 bottom-8 hidden"}>
         <JoystickController />
       </div>
 
-      <div className={"absolute right-8 bottom-8"}>
+      <div className={"absolute right-8 bottom-8 hidden"}>
         <Shoot
           onPressing={(t) => {}}
           onFinish={(t) => {

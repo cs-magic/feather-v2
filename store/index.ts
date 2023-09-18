@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { useEffect, useState } from "react"
 import { createPlayerSlice, type PlayerState } from "@/store/player.slice"
 import { createSystemSlice, type SystemState } from "@/store/system.slice"
 import { UIState, createUISlice } from "@/store/ui.slice"
@@ -52,3 +53,17 @@ export const useAppStore = create<StoreState>()(
     )
   )
 )
+
+export const useStore = <T, F>(
+  store: (callback: (state: T) => unknown) => unknown,
+  callback: (state: T) => F
+) => {
+  const result = store(callback) as F
+  const [data, setData] = useState<F>()
+
+  useEffect(() => {
+    setData(result)
+  }, [result])
+
+  return data
+}
