@@ -23,17 +23,21 @@ export function useSocketEvents(_events: Event[]) {
   const events: Event[] = [...defaultEvents, ..._events]
 
   useEffect(() => {
+    // no-op if the socket is already connected
+    console.log("connecting")
     socket.connect()
 
     for (const event of events) {
+      console.log("on handler of ", event.name)
       socket.on(event.name, event.handler)
     }
-    // no-op if the socket is already connected
 
     return function () {
       for (const event of events) {
+        console.log("off handler of ", event.name)
         socket.off(event.name)
       }
+      console.log("disconnecting")
       socket.disconnect()
     }
   }, [])

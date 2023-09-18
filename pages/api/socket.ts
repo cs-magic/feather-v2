@@ -38,13 +38,16 @@ export default async function handler(
         console.log(`received general msg: ${JSON.stringify(msg)}`)
       })
 
-      socket.on(SocketEvent.UserJoinRoom, (msg: IRoomMsg) => {
-        socket.join(msg.roomId)
+      socket.on(SocketEvent.UserJoinRoom, async (msg: IRoomMsg) => {
+        console.log(SocketEvent.UserJoinRoom, msg)
+        await socket.join(msg.roomId) // 这里要等待！
+        // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(msg.roomId).emit(SocketEvent.UserJoinRoom, msg)
+        // socket.emit(SocketEvent.UserJoinRoom, msg)
       })
 
       socket.on(SocketEvent.UserLeaveRoom, (msg: IRoomMsg) => {
-        socket.to(msg.roomId).emit(SocketEvent.UserJoinRoom, msg)
+        socket.to(msg.roomId).emit(SocketEvent.UserLeaveRoom, msg)
       })
 
       socket.on(SocketEvent.UserPrepared, async (msg: IRoomMsg) => {

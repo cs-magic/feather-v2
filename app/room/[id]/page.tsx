@@ -33,11 +33,14 @@ export default function RoomPage({
   }, FeatherRenderInterval)
 
   useEffect(() => {
-    void socket.emit(SocketEvent.UserJoinRoom, {
-      content: `user ${""} joined room ${roomId}`,
-    } as IRoomMsg)
-    // socket?.emit(SocketEvent.UserJoinRoom, )
-  }, [])
+    console.log("socket connected: ", socket.connected)
+    if (socket.connected) {
+      void socket.emit(SocketEvent.UserJoinRoom, {
+        roomId,
+        content: `user ${socket.id} joined room ${roomId}`,
+      } as IRoomMsg)
+    }
+  }, [socket.connected])
 
   return (
     <>

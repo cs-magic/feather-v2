@@ -1,7 +1,8 @@
 "use client"
 
 import { PropsWithChildren } from "react"
-import { SocketEvent } from "@/ds/socket"
+import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { toast } from "react-toastify"
 
 import { useSocketEvents } from "@/hooks/socket"
 import { Separator } from "@/components/ui/separator"
@@ -13,8 +14,9 @@ export default function GameLayout({ children }: PropsWithChildren) {
   useSocketEvents([
     {
       name: SocketEvent.UserJoinRoom,
-      handler: (...args) => {
-        console.log("UserJoinRoom: ", { args })
+      handler: (msg: IRoomMsg) => {
+        console.log("UserJoinRoom: ", msg)
+        toast(msg.content)
       },
     },
   ])
