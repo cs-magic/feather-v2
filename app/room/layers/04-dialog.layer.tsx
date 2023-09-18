@@ -1,8 +1,8 @@
+import { GameStateType } from "@/lib/game"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { GameState } from "@/components/game/feather-manager"
 import Layer from "@/app/room/layers/Layer"
 
-export default function DialogLayer({ state }: { state: GameState }) {
+export default function DialogLayer({ state }: { state: GameStateType }) {
   switch (state) {
     case "stopped":
       return (

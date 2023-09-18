@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { createPlayerSlice, type PlayerState } from "@/store/player.slice"
 import { createSystemSlice, type SystemState } from "@/store/system.slice"
 import { UIState, createUISlice } from "@/store/ui.slice"
+import { UserState, createUserSlice } from "@/store/user.slice"
 import { create, type StateCreator } from "zustand"
 import { devtools, persist } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
@@ -16,7 +17,7 @@ import { immer } from "zustand/middleware/immer"
 /**
  * store
  */
-export type StoreState = PlayerState & SystemState & UIState
+export type StoreState = PlayerState & SystemState & UIState & UserState
 
 export type StoreSlice<T> = StateCreator<
   StoreState,
@@ -36,6 +37,7 @@ export const useAppStore = create<StoreState>()(
         ...createPlayerSlice(...a),
         ...createSystemSlice(...a),
         ...createUISlice(...a),
+        ...createUserSlice(...a),
       })),
       {
         name: "zustand",

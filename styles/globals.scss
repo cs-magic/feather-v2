@@ -1,65 +1,88 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 47.4% 11.2%;
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 47.4% 11.2%;
+
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+
     --destructive: 0 100% 50%;
     --destructive-foreground: 210 40% 98%;
+
     --ring: 215 20.2% 65.1%;
+
     --radius: 0.5rem;
   }
 
   .dark {
     --background: 224 71% 4%;
     --foreground: 213 31% 91%;
+
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
+
     --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
+
     --popover: 224 71% 4%;
     --popover-foreground: 215 20.2% 65.1%;
+
     --border: 216 34% 17%;
     --input: 216 34% 17%;
+
     --card: 224 71% 4%;
     --card-foreground: 213 31% 91%;
+
     /*--primary: 210 40% 98%;*/
     --primary: 195 68% 27%;
     --primary-foreground: 222.2 47.4% 1.2%;
+
     --secondary: 222.2 47.4% 11.2%;
     --secondary-foreground: 210 40% 98%;
+
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
+
     --ring: 216 34% 17%;
+
     --radius: 0.5rem;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  #point {
+
+
+  #point{
     position: absolute;
     border-radius: 50%;
     opacity: 0.85;
@@ -67,9 +90,8 @@
     height: 50px;
     width: 50px;
     background-color: aqua;
-    z-index: 1;
+    z-index:1;
   }
-
   .nipple {
     border: 1px solid #000;
   }
@@ -79,38 +101,55 @@
   }
 
   .ribbon {
+    $default-right: 10px;
+    $default-top: -3px;
+    $default-color: #2ca7d8;
+    $default-width: 32px;
+    $default-height: 36px;
+
     position: absolute;
-    right: var(--right, 10px);
-    top: var(--top, -3px);
-    filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.5));
+    right: var(--right, $default-right);
+    top: var(--top, $default-top);
+
+    filter: drop-shadow(2px 3px 2px rgba(black, 0.5));
+
+    > .content {
+      color: white;
+      font-size: 1.25rem;
+      text-align: center;
+      font-weight: 400;
+      background: var(--color, $default-color) linear-gradient(45deg, rgba(black, 0) 0%, rgba(white, 0.25) 100%);
+      padding: 8px 2px 4px;
+
+
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 100%, 0 100%);
+
+      width: var(--width, $default-width);
+      min-height: var(--height, $default-height);
+
+      transition: clip-path 1s, padding 1s, background 1s;
+    }
+
+    &.slant-up > .content {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), 50% calc(100% - 6px), 0 100%);
+    }
+
+    &.slant-down > .content {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 6px), 0 calc(100% - 12px));
+    }
+
+    &.down > .content {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), 50% 100%, 0 calc(100% - 8px));
+    }
+
+    &.up > .content {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+    }
+
+    &.check > .content {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), 40% 100%, 0 calc(100% - 12px));
+    }
   }
-  .ribbon > .content {
-    color: white;
-    font-size: 1.25rem;
-    text-align: center;
-    font-weight: 400;
-    background: var(--color, #2ca7d8) linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.25) 100%);
-    padding: 8px 2px 4px;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 100%, 0 100%);
-    width: var(--width, 32px);
-    min-height: var(--height, 36px);
-    transition: clip-path 1s, padding 1s, background 1s;
-  }
-  .ribbon.slant-up > .content {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), 50% calc(100% - 6px), 0 100%);
-  }
-  .ribbon.slant-down > .content {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 6px), 0 calc(100% - 12px));
-  }
-  .ribbon.down > .content {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), 50% 100%, 0 calc(100% - 8px));
-  }
-  .ribbon.up > .content {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
-  }
-  .ribbon.check > .content {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), 40% 100%, 0 calc(100% - 12px));
-  }
+
 }
 
-/*# sourceMappingURL=globals.css.map */

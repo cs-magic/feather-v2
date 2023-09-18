@@ -1,9 +1,8 @@
 import { useAppStore } from "@/store"
 
+import { toUserPos } from "@/lib/game"
 import { JoystickController } from "@/components/game/controller/joystick"
 import { Shoot } from "@/components/game/controller/shoot"
-import { toUserPos } from "@/components/game/feather-manager"
-import { Timer } from "@/components/timer"
 import Layer from "@/app/room/layers/Layer"
 
 export default function ControllersLayer() {

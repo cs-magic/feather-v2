@@ -1,14 +1,19 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { useAppStore } from "@/store"
+import { useElementSize } from "@mantine/hooks"
+import { toast } from "react-toastify"
 
-import { FeatherRenderInterval } from "@/config/game"
+import { GameUpdateClientInterval } from "@/config/game"
+import { GameState, toUserPos } from "@/lib/game"
 import { socket } from "@/lib/socket"
 import useInterval from "@/hooks/interval"
 import { useSocketEvents } from "@/hooks/socket"
+import { Separator } from "@/components/ui/separator"
 import { Feather } from "@/components/game/feather"
-import { FeatherManager, toUserPos } from "@/components/game/feather-manager"
+import { MainPlayer, SubPlayer } from "@/components/game/player"
 import GroundLayer from "@/app/room/layers/01-ground.layer"
 import DialogLayer from "@/app/room/layers/04-dialog.layer"
 import Layer from "@/app/room/layers/Layer"
@@ -19,44 +24,77 @@ export default function RoomPage({
   params: { id: string }
 }) {
   const [tick, setTick] = useState(0)
-  const [n, setN] = useState(2)
   const k = 0
 
-  const featherManager = useRef(new FeatherManager(n))
+  const [game, setGame] = useState<GameState>()
 
-  useEffect(() => {
-    featherManager.current.start()
-  }, [])
+  const { ref, width, height } = useElementSize()
+
+  const { setViewPointWidth, setViewPointHeight, userImage } = useAppStore()
+  const mainPlayer = game?.members.filter((m) => m.id === socket.id)[0]
 
   useInterval(() => {
-    setTick((tick) => tick + 1)
-  }, FeatherRenderInterval)
+    if (game?.state === "playing") {
+      setTick((tick) => tick + 1)
+    }
+  }, GameUpdateClientInterval)
+
+  useSocketEvents(
+    [
+      {
+        name: SocketEvent.UserJoinRoom,
+        handler: (msg: IRoomMsg) => {
+          console.log("UserJoinRoom: ", msg)
+          toast(msg.content)
+        },
+      },
+      {
+        name: SocketEvent.Game,
+        handler: (msg: GameState) => {
+          console.log("synced game: ", msg)
+          setGame(msg)
+        },
+      },
+    ],
+    { roomId, image: userImage }
+  )
 
   useEffect(() => {
-    console.log("socket connected: ", socket.connected)
-    if (socket.connected) {
-      void socket.emit(SocketEvent.UserJoinRoom, {
-        roomId,
-        content: `user ${socket.id} joined room ${roomId}`,
-      } as IRoomMsg)
-    }
-  }, [socket.connected])
+    setViewPointWidth(width)
+    setViewPointHeight(height)
+  }, [width, height])
+
+  const n = (game?.members.length ?? 0) - 1
 
   return (
-    <>
-      <GroundLayer />
-
-      <Layer>
-        {featherManager.current.feathers
-          .map((polarPos) => toUserPos(polarPos, k, n))
-          .map((cartesianPos, index) => (
-            <Feather key={index} pos={cartesianPos} />
+    <div className={"absolute inset-0 w-full h-full flex flex-col"}>
+      <div className={"w-full flex items-end"}>
+        {game?.members
+          .filter((m) => m.id !== socket.id)
+          .map((m) => (
+            <div className={"grow basis-0"} key={m.id}>
+              <SubPlayer key={m.id} {...m} />
+            </div>
           ))}
-      </Layer>
+      </div>
+      <Separator orientation={"horizontal"} />
 
-      {/*<ControllersLayer/>*/}
+      <div className={"grow relative"} ref={ref}>
+        <GroundLayer />
 
-      <DialogLayer state={featherManager.current.state} />
-    </>
+        <Layer>
+          {game?.feathers
+            .map((polarPos) => toUserPos(polarPos, k, n))
+            .map((cartesianPos, index) => (
+              <Feather key={index} pos={cartesianPos} />
+            ))}
+        </Layer>
+
+        <DialogLayer state={game?.state ?? "waiting"} />
+      </div>
+
+      <Separator orientation={"horizontal"} />
+      {mainPlayer && <MainPlayer roomId={roomId} player={mainPlayer} />}
+    </div>
   )
 }

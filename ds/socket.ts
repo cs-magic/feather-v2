@@ -3,6 +3,11 @@ export interface IMsg {
   content?: string
 }
 
+export interface IUserMsg extends IMsg {
+  id?: string
+  image: string
+}
+
 export interface IRoomMsg extends IMsg {
   roomId: string
 }
@@ -16,4 +21,5 @@ export enum SocketEvent {
   UserLeaveRoom = "UserLeaveRoom",
   UserPrepared = "UserPrepared",
   UserUnPrepare = "UserUnPrepare",
+  Game = "Game",
 }
