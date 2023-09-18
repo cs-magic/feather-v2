@@ -3,11 +3,7 @@ import { useAppStore } from "@/store"
 import { Joystick } from "react-joystick-component"
 import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick"
 
-import {
-  MainPlayerMaxX,
-  MainPlayerMinX,
-  MainPlayerSpeedMultiplier,
-} from "@/config/game"
+import { PlayerMaxX, PlayerMinX, PlayerSpeedMultiplier } from "@/config/game"
 import useInterval from "@/hooks/interval"
 
 export const JoystickController = () => {
@@ -28,9 +24,9 @@ export const JoystickController = () => {
     if (playerSpeed) {
       setPlayerX(() => {
         let x = playerX
-        x += playerSpeed * MainPlayerSpeedMultiplier
-        x = Math.max(x, MainPlayerMinX)
-        x = Math.min(x, MainPlayerMaxX)
+        x += playerSpeed * PlayerSpeedMultiplier
+        x = Math.max(x, PlayerMinX)
+        x = Math.min(x, PlayerMaxX)
         return x
       })
     }

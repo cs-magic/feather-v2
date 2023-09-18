@@ -6,7 +6,7 @@ export interface IUser {
 export type PlayerStateType = "preparing" | "prepared" | "playing" | "idle"
 
 export interface IPlayer extends IUser {
-  life?: number
+  life: number
   x: number
   state: PlayerStateType
 }

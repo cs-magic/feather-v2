@@ -1,5 +1,5 @@
-export const limitRange = (x: number, range: { l?: number; r?: number }) => {
-  if (range.l && x < range.l) return range.l
-  if (range.r && x > range.r) return range.r
+export const limitRange = (x: number, l?: number, r?: number) => {
+  if (l && x < l) return l
+  if (r && x > r) return r
   return x
 }

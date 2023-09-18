@@ -1,22 +1,21 @@
 "use client"
 
-import { PropsWithChildren, ReactNode, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { IRoomMsg, SocketEvent } from "@/ds/socket"
 import { IPlayer, PlayerStateType } from "@/ds/user"
-import { useAppStore } from "@/store"
-import { PlayerState } from "@/store/player.slice"
 import { useElementSize } from "@mantine/hooks"
 import { animated, useSpring } from "@react-spring/web"
-import { useDrag } from "@use-gesture/react"
+import { useGesture } from "@use-gesture/react"
 import { range } from "lodash"
 
+import { PlayerMaxLife } from "@/config/game"
 import { limitRange } from "@/lib/range"
 import { socket } from "@/lib/socket"
 import { cn } from "@/lib/utils"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Button } from "@/components/ui/button"
-import { Timer } from "@/components/timer"
+import { Label } from "@/components/ui/label"
 
 export const PlayerStateComp = ({
   state,
@@ -102,6 +101,9 @@ export const SubPlayer = (player: IPlayer) => {
   )
 }
 
+// 要在组件外面，否则会被重复渲染
+let timer: ReturnType<typeof setInterval> // number
+
 export const MainPlayer = ({
   player,
   roomId,
@@ -109,45 +111,64 @@ export const MainPlayer = ({
   player: IPlayer
   roomId: string
 }) => {
-  const { viewPointWidth } = useAppStore()
-  const xkey = "marginLeft"
-  const left = viewPointWidth >> 1
-  const [isMoving, setMoving] = useState(false)
-  const [t, setT] = useState(0)
-
   const { ref, width } = useElementSize()
+  const startMarginLeft = width >> 1
+
   const { ref: refImage, width: imageWidth } = useElementSize()
 
-  const [style, api] = useSpring(() => ({ marginLeft: width >> 1 }), [])
-  const bind = useDrag(({ active, movement: [mx, my], offset: [ox, oy] }) => {
-    // if (!active) {
-    //   setMoving(false)
-    // }
-    // if (active && Math.abs(mx) > 10) {
-    //   setMoving(true)
-    // }
+  const [s, setS] = useState("progress-info")
 
-    const pw = imageWidth / 2
-    const marginLeft = limitRange(style.marginLeft.get() + mx, {
-      l: pw,
-      r: width - pw,
-    })
+  const [style, api] = useSpring(
+    () => ({ marginLeft: startMarginLeft, t: 0 }),
+    [startMarginLeft]
+  )
 
-    console.log({ ...style, mx, marginLeft })
-    // const pw = width >> 1
-    // console.log({ active, left, mx: ox, viewPointWidth })
-    api.start({
-      // x: newX,
-      marginLeft,
-      // [xkey]: limitRange(left + ox, { l: pw, r: viewPointWidth - pw }),
-    })
-  }, {})
+  const bind = useGesture(
+    {
+      onDragStart: () => {
+        timer = setInterval(() => {
+          const t = Math.min(style.t.get() + 10, 100)
+          console.log({ t, s })
+          if (t > 90 && s !== "progress-error") {
+            setS("progress-error")
+          }
+          api.start({ t })
+        }, 100)
+      },
+      onDragEnd: () => {
+        console.log("end")
+        clearInterval(timer)
+        api.start({ t: 0 })
+        if (s !== "progress-info") {
+          setS("progress-info")
+        }
+      },
+      onDrag: ({
+        active,
+        movement: [mx, my],
+        offset: [ox, oy],
+        pressed,
+        startTime,
+        timeStamp,
+      }) => {
+        const pw = imageWidth / 2
+        const marginLeft = limitRange(startMarginLeft + ox, pw, width - pw)
 
-  const onFinish = (t: number) => {
-    setT(0)
-  }
-  const pressedT = isMoving ? 0 : t
+        // console.log({
+        //     active,
+        //     pressed,
+        //     mx: mx.toFixed(1),
+        //     marginLeft: marginLeft.toFixed(1),
+        //     startTime: startTime.toFixed(1),
+        //     timeStamp: timeStamp.toFixed(1),
+        // })
+        api.start({ marginLeft })
+      },
+    },
+    {}
+  )
 
+  console.log({ s, t: style.t.get() })
   return (
     <div className={"shrink-0 w-full relative"} ref={ref}>
       <animated.div
@@ -157,20 +178,37 @@ export const MainPlayer = ({
         {...bind()}
         suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
       >
-        {/*<Timer*/}
-        {/*  onFinish={onFinish}*/}
-        {/*  onPressing={setT}*/}
-        {/*  style={*/}
-        {/*    {*/}
-        {/*      // offset-x | offset-y | [ blur-radius | spread-radius | ] color*/}
-        {/*      boxShadow: `0px -${pressedT}px ${pressedT}px ${pressedT}px rgba(200, 20, 20, 70%)`,*/}
-        {/*      scale: 1 - Math.min(pressedT, 300) / 500,*/}
-        {/*    }*/}
-        {/*  }*/}
-        {/*>*/}
         <PlayerInner {...player} />
-        {/*</Timer>*/}
       </animated.div>
+
+      <div className={"absolute left-2 top-2 w-full"}>
+        <div className={"flex flex-col gap-2"}>
+          <div className={"inline-flex items-center gap-2"}>
+            <Label>生命值</Label>
+            <animated.progress
+              className={cn(
+                "progress w-36",
+                player.life <= PlayerMaxLife / 3
+                  ? "progress-error"
+                  : player.life <= (PlayerMaxLife * 2) / 3
+                  ? "progress-warn"
+                  : "progress-info"
+              )}
+              value={player.life}
+              max={PlayerMaxLife}
+            />
+          </div>
+
+          <div className={"inline-flex items-center gap-2"}>
+            <Label>怒气值</Label>
+            <animated.progress
+              className={cn("progress w-36", s)}
+              value={style.t}
+              max="100"
+            />
+          </div>
+        </div>
+      </div>
 
       <Button
         className={"absolute right-2 bottom-2"}
