@@ -95,5 +95,9 @@
   .nipple {
     border: 1px solid #000;
   }
+
+  .link {
+    @apply flex items-center gap-2 hover:text-primary hover:underline hover:underline-offset-4;
+  }
 }
 

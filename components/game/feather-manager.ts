@@ -16,10 +16,8 @@ export class FeatherManager {
   private addFeather = () => {
     this.feathers.push({
       r: 0,
-      theta:
-        // 0.1,
-        // (Math.random() - 0.5) * 2 * Math.PI
-        (Math.random() / 2) * 2 * Math.PI,
+      theta: (Math.random() - 0.5) * 2 * Math.PI,
+      // (Math.random() / 2) * 2 * Math.PI,
     })
   }
 
@@ -45,7 +43,7 @@ export class FeatherManager {
 
   public start() {
     this.state = "playing"
-    this.addFeather()
+    // this.addFeather()
   }
 
   public pause() {

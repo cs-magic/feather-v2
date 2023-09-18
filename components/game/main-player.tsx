@@ -1,35 +1,46 @@
 "use client"
 
+import { useAppStore } from "@/store"
+import { useElementSize } from "@mantine/hooks"
 import { animated, useSpring } from "@react-spring/web"
 import { useDrag } from "@use-gesture/react"
 
+import { limitRange } from "@/lib/range"
 import { cn } from "@/lib/utils"
 import { Player } from "@/components/game/player"
 
 export const MainPlayer = () => {
-  // todo: zustand persist with ssr, see: https://github.com/pmndrs/zustand/issues/938
-  // 每一局都会重开，所以这里不需要从store中读取位置
-  const left = 200
-  const side: "top" | "bottom" = "bottom"
+  const { viewPointWidth } = useAppStore()
+  const xkey = "marginLeft"
+  const left = viewPointWidth >> 1
   const [style, api] = useSpring(
     () => ({
-      left: left, //playerX ?? viewPointWidth * 0.5,
-      [side]: 0,
+      [xkey]: left, //playerX ?? viewPointWidth * 0.5,
     }),
     []
   )
 
+  const { ref, width } = useElementSize()
+
   const bind = useDrag(({ active, offset: [mx, my] }) => {
-    api.start({ left: left + mx })
+    const pw = width >> 1
+    console.log({ left, mx, viewPointWidth })
+    api.start({
+      [xkey]: limitRange(left + mx, { l: pw, r: viewPointWidth - pw }),
+    })
   }, {})
 
   return (
-    <animated.div
-      {...bind()}
-      style={style}
-      className={cn("absolute -translate-x-1/2 select-none", "w-[20%]")}
-    >
-      <Player blow="/game/player/B/blow.png" />
-    </animated.div>
+    <div className={"w-full relative"}>
+      <animated.div
+        ref={ref}
+        {...bind()}
+        style={style}
+        className={cn(" -translate-x-1/2 select-none touch-none w-[20%] z-50")}
+        suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
+      >
+        <Player blow="/game/player/B/blow.png" />
+      </animated.div>
+    </div>
   )
 }

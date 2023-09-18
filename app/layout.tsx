@@ -1,4 +1,5 @@
 import "@/styles/globals.css"
+import { PropsWithChildren } from "react"
 import { Metadata } from "next"
 
 import { siteConfig } from "@/config/site"
@@ -24,33 +25,19 @@ export const metadata: Metadata = {
   },
 }
 
-interface RootLayoutProps {
-  children: React.ReactNode
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
         <head />
         <body
           className={cn(
-            "min-h-screen bg-background font-sans antialiased",
+            "h-screen bg-background font-sans antialiased",
             fontSans.variable
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            {/*<div className="relative flex min-h-screen flex-col">*/}
-            {/*  <SiteHeader />*/}
-            {/*  <div className="flex-1">{children}</div>*/}
-            {/*</div>*/}
-            <div
-              className={
-                "relative w-full md:w-[720px] mx-auto flex flex-col border h-screen overflow-auto"
-              }
-            >
-              {children}
-            </div>
+            {children}
             <TailwindIndicator />
           </ThemeProvider>
         </body>
