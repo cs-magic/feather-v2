@@ -15,7 +15,7 @@ export const Feather = ({ pos }: { pos: ICartesianPos }) => {
 
   if (!mounted) return null
 
-  console.log({ viewPointWidth, viewPointHeight, pos, width, height })
+  // console.log({ viewPointWidth, viewPointHeight, pos, width, height })
 
   return (
     <Image
