@@ -9,10 +9,13 @@ export interface IMsg extends IUser, IBaseMsg {
 }
 
 export enum SocketEvent {
-  // room
+  GameState = "GameState",
+
   UserJoinRoom = "UserJoinRoom",
   UserLeaveRoom = "UserLeaveRoom",
-  UserPrepared = "UserPrepared",
-  UserUnPrepare = "UserUnPrepare",
-  Game = "Game",
+
+  UserSwitchPreparation = "UserSwitchPreparation",
+
+  UserMove = "UserMove",
+  UserShoot = "UserShoot",
 }

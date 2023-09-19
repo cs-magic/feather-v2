@@ -1,4 +1,5 @@
 export interface IUser {
+  socketId: string
   userId: string
   userImage: string
 }

@@ -169,6 +169,8 @@ export const MainPlayer = ({
       }) => {
         const pw = imageWidth / 2
         const marginLeft = limitRange(startMarginLeft + ox, pw, width - pw)
+        const x = marginLeft / width
+        socket.emit(SocketEvent.UserMove, { x })
 
         // console.log({
         //     active,
@@ -230,18 +232,7 @@ export const MainPlayer = ({
         ["preparing", "prepared"].includes(player.state) && (
           <Button
             className={"absolute right-2 bottom-2"}
-            onClick={() => {
-              socket.emit(
-                player.state === "prepared"
-                  ? SocketEvent.UserUnPrepare
-                  : SocketEvent.UserPrepared,
-                {
-                  roomId,
-                  userId: player.userId,
-                  userImage: player.userImage,
-                } as IMsg
-              )
-            }}
+            onClick={() => socket.emit(SocketEvent.UserSwitchPreparation)}
           >
             {player.state === "prepared" ? "取消准备" : "准备"}
           </Button>

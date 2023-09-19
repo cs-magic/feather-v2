@@ -13,12 +13,20 @@ export const config = {
   },
 }
 
+const user2room: Record<string, string> = {}
+
 const gameManager: Record<string, GameRoom> = {}
-const getRoom = (server: SocketIOServer, roomId: string) => {
+
+const getGame = (server: SocketIOServer, roomId: string) => {
   if (roomId in gameManager) return gameManager[roomId]
   return (gameManager[roomId] = new GameRoom(server, roomId))
 }
 
+/**
+ * 我们强制每个用户同一时间、只能在某一浏览器、在某一个对战室内，因此，可以构建 socket.id -> room.id 的哈希表
+ * @param req
+ * @param res
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseServerIO
@@ -26,12 +34,13 @@ export default async function handler(
   if (res.socket.server.io) {
     // console.log("Socket is already running")
   } else {
-    console.log("New Socket.io server...")
+    console.log("initializing Socket.io server...")
+
     // adapt Next's net Server to http Server
     const httpServer: NetServer = res.socket.server as any
     const server = new Server(httpServer, {
       path: SOCKET_IO_ENDPOINT,
-      addTrailingSlash: false, // ref: https://github.com/vercel/next.js/issues/49334
+      addTrailingSlash: false, // next13必加，巨坑，ref: https://github.com/vercel/next.js/issues/49334
       cors: {
         origin: "*",
         methods: ["GET", "POST"],
@@ -39,35 +48,42 @@ export default async function handler(
     })
 
     server.on("connection", (socket) => {
-      socket.on("disconnecting", () => {
-        console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
-        socket.rooms.forEach((r) => {
-          if (r in gameManager) {
-            gameManager[r].memberLeave()
-          }
-        })
-      })
+      const game = getGame(server, user2room[socket.id])
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IMsg) => {
         console.log(SocketEvent.UserJoinRoom, msg.userId)
         const { roomId, userId, userImage } = msg
+
         await socket.join(roomId) // 这里要等待！
+
+        user2room[socket.id] = roomId
+
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
 
-        getRoom(server, roomId).memberJoin(msg)
+        game.memberJoinRoom(msg)
       })
 
-      socket.on(SocketEvent.UserLeaveRoom, (msg: IMsg) => {
-        getRoom(server, msg.roomId).memberLeave(msg.userId)
+      socket.on("disconnecting", () => {
+        console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
+        // 遍历所有房间（不过这里没必要）: `socket.rooms.forEach((r) => {`
+        game.memberLeaveRoom(socket.id)
       })
 
-      socket.on(SocketEvent.UserPrepared, async (msg: IMsg) => {
-        getRoom(server, msg.roomId).memberPrepare(msg.userId)
+      socket.on(SocketEvent.UserLeaveRoom, () => {
+        game.memberLeaveRoom(socket.id)
       })
 
-      socket.on(SocketEvent.UserUnPrepare, async (msg: IMsg) => {
-        getRoom(server, msg.roomId).memberUnPrepare(msg.userId)
+      socket.on(SocketEvent.UserSwitchPreparation, async () => {
+        game.memberSwitchPreparation(socket.id)
+      })
+
+      socket.on(SocketEvent.UserMove, async (x: number) => {
+        game.memberMove(socket.id, x)
+      })
+
+      socket.on(SocketEvent.UserShoot, async (power: number) => {
+        game.memberShoot(socket.id, power)
       })
     })
 

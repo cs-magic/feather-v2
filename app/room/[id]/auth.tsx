@@ -50,7 +50,7 @@ export const WithPlayerId = (msg: IMsg) => {
         },
       },
       {
-        name: SocketEvent.Game,
+        name: SocketEvent.GameState,
         handler: (msg: GameState) => {
           console.log("synced game: ", msg)
 

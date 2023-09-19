@@ -42,7 +42,7 @@ export default function DialogLayer({
                   variant={"outline"}
                   className={"w-full"}
                   onClick={() => {
-                    socket.emit(SocketEvent.UserPrepared, msg)
+                    socket.emit(SocketEvent.UserSwitchPreparation, msg)
                   }}
                 >
                   继续准备

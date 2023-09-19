@@ -45,10 +45,10 @@ export class GameRoom {
 
   private sync() {
     this.members = this.members.filter((x) => !!x)
-    this.server.to(this.room).emit(SocketEvent.Game, this.data())
+    this.server.to(this.room).emit(SocketEvent.GameState, this.data())
   }
 
-  public memberJoin(user: IUser) {
+  public memberJoinRoom(user: IUser) {
     // 重连需要删除旧的socket
     const i = this.members.findIndex((m) => m.userId === user.userId)
     if (i >= 0) delete this.members[i]
@@ -57,22 +57,30 @@ export class GameRoom {
     this.sync()
   }
 
-  public memberLeave(playerId?: string) {
-    this.members = this.members.filter((p) => p.userId && p.userId !== playerId)
+  public memberLeaveRoom(socketId: string) {
+    this.members = this.members.filter(
+      (p) => p.socketId && p.socketId !== socketId
+    )
     this.sync()
   }
 
-  public memberPrepare(playerId: string) {
-    this.members.find((p) => p.userId === playerId)!.state = "prepared"
+  public memberSwitchPreparation(socketId: string) {
+    const player = this.members.find((p) => p.socketId === socketId)!
+    const { state } = player
+    player.state = state === "preparing" ? "prepared" : "preparing"
     this.sync()
 
     // 最后一个人准备后自动开局
-    this.tryStart()
+    if (player.state === "prepared") this.tryStart()
   }
 
-  public memberUnPrepare(playerId: string) {
-    this.members.find((p) => p.userId === playerId)!.state = "preparing"
-    this.sync()
+  public memberMove(socketId: string, x: number) {
+    this.members.find((p) => p.socketId === socketId)!.x = x
+  }
+
+  public memberShoot(socketId: string, power: number) {
+    // todo
+    // this.members.find((p) => p.socketId === socketId)!
   }
 
   public data(): GameState {
