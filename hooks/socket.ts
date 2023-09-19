@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { IMsg, SocketEvent } from "@/ds/socket"
+import { IFullMsg, IMsg, SocketEvent } from "@/ds/socket"
 
 import { socket } from "@/lib/socket"
 
@@ -41,7 +41,8 @@ export function useSocketEvents(events: Event[], extra: IMsg) {
       socket.emit(SocketEvent.UserJoinRoom, {
         content: `user ${socket.id} joined room ${roomId}`,
         ...extra,
-      } as IMsg)
+        socketId: socket.id,
+      } as IFullMsg)
     })
 
     return function () {

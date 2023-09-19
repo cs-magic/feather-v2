@@ -17,7 +17,7 @@ const user2room: Record<string, string> = {}
 
 const gameManager: Record<string, GameRoom> = {}
 
-const getGame = (server: SocketIOServer, roomId: string) => {
+const getGameFromSocket = (server: SocketIOServer, roomId: string) => {
   if (roomId in gameManager) return gameManager[roomId]
   return (gameManager[roomId] = new GameRoom(server, roomId))
 }
@@ -48,35 +48,38 @@ export default async function handler(
     })
 
     server.on("connection", (socket) => {
-      const game = getGame(server, user2room[socket.id])
+      const getGame = () => getGameFromSocket(server, user2room[socket.id])
 
-      socket.on(SocketEvent.UserJoinRoom, async (msg: IMsg) => {
+      socket.on(SocketEvent.UserJoinRoom, async (msg: IFullMsg) => {
         const { roomId } = msg
 
         await socket.join(roomId) // 这里要等待！
 
-        user2room[socket.id] = roomId
+        user2room[socket.id] = roomId // 初始化
 
-        const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
-        console.log(SocketEvent.UserJoinRoom, { msg, fullMsg })
+        // const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
+        console.log(SocketEvent.UserJoinRoom, { msg })
 
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
-        socket.to(roomId).emit(SocketEvent.UserJoinRoom, fullMsg)
+        socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
 
-        game.memberJoinRoom(fullMsg)
+        getGame().memberJoinRoom(msg)
       })
       ;[
-        { event: "disconnecting", handler: game.memberLeaveRoom },
-        { event: SocketEvent.UserLeaveRoom, handler: game.memberLeaveRoom },
+        { name: "disconnecting", handler: getGame().memberLeaveRoom },
         {
-          event: SocketEvent.UserSwitchPreparation,
-          handler: game.memberSwitchPreparation,
+          name: SocketEvent.UserLeaveRoom,
+          handler: getGame().memberLeaveRoom,
         },
-        { event: SocketEvent.UserMove, handler: game.memberMove },
-        { event: SocketEvent.UserShoot, handler: game.memberShoot },
-      ].forEach(({ event, handler }) => {
-        console.log("adding handler: ", event)
-        socket.on(event, (args: any) => {
+        {
+          name: SocketEvent.UserSwitchPreparation,
+          handler: getGame().memberSwitchPreparation,
+        },
+        { name: SocketEvent.UserMove, handler: getGame().memberMove },
+        { name: SocketEvent.UserShoot, handler: getGame().memberShoot },
+      ].forEach(({ name, handler }) => {
+        console.log("adding handler: ", name)
+        socket.on(name, (args: any) => {
           handler(socket.id, args)
         })
       })

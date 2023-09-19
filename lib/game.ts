@@ -87,13 +87,15 @@ export class GameRoom {
   }
 
   public data(): GameState {
-    return {
+    const data = {
       state: this.state,
       tick: this.tick,
       room: this.room,
       members: this.members,
       feathers: this.feathers,
     }
+    console.log("data: ", data)
+    return data
   }
 
   private addFeather = () => {
