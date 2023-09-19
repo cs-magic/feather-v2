@@ -18,10 +18,10 @@ import Layer from "@/app/room/layers/Layer"
 
 export const WithPlayerId = ({
   roomId,
-  playerId,
+  userId,
 }: {
   roomId: string
-  playerId: string
+  userId: string
 }) => {
   const [tick, setTick] = useState(0)
   const k = 0
@@ -31,7 +31,7 @@ export const WithPlayerId = ({
   const { ref, width, height } = useElementSize()
 
   const { setViewPointWidth, setViewPointHeight, userImage } = useAppStore()
-  const mainPlayer = game?.members.filter((m) => m.id === socket.id)[0]
+  const mainPlayer = game?.members.filter((m) => m?.userId === userId)[0]
 
   useInterval(() => {
     if (game?.state === "playing") {
@@ -56,7 +56,7 @@ export const WithPlayerId = ({
         },
       },
     ],
-    { roomId, image: userImage }
+    { roomId, image: userImage, userId }
   )
 
   useEffect(() => {
@@ -66,14 +66,19 @@ export const WithPlayerId = ({
 
   const n = (game?.members.length ?? 0) - 1
 
+  console.log("members: ", game?.members)
+
   return (
-    <div className={"absolute inset-0 w-full h-full flex flex-col"}>
+    <div
+      className={"absolute inset-0 w-full h-full flex flex-col"}
+      suppressHydrationWarning
+    >
       <div className={"w-full flex items-end"}>
         {game?.members
-          .filter((m) => m.id !== socket.id)
+          .filter((m) => m?.userId !== userId)
           .map((m) => (
-            <div className={"grow basis-0"} key={m.id}>
-              <SubPlayer key={m.id} {...m} />
+            <div className={"grow basis-0"} key={m.userId}>
+              <SubPlayer key={m.userId} {...m} />
             </div>
           ))}
       </div>

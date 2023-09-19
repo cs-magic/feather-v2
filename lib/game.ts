@@ -47,17 +47,21 @@ export class GameRoom {
   }
 
   public memberJoin(user: IUser) {
+    // 重连需要删除旧的socket
+    const i = this.members.findIndex((m) => m.userId === user.userId)
+    if (i >= 0) delete this.members[i]
+
     this.members.push(initPlayerFromUser(user))
     this.sync()
   }
 
   public memberLeave(playerId?: string) {
-    this.members = this.members.filter((p) => p.id && p.id !== playerId)
+    this.members = this.members.filter((p) => p.userId && p.userId !== playerId)
     this.sync()
   }
 
   public memberPrepare(playerId: string) {
-    this.members.find((p) => p.id === playerId)!.state = "prepared"
+    this.members.find((p) => p.userId === playerId)!.state = "prepared"
     this.sync()
 
     // 最后一个人准备后自动开局
@@ -65,7 +69,7 @@ export class GameRoom {
   }
 
   public memberUnPrepare(playerId: string) {
-    this.members.find((p) => p.id === playerId)!.state = "preparing"
+    this.members.find((p) => p.userId === playerId)!.state = "preparing"
     this.sync()
   }
 

@@ -1,9 +1,10 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAppStore } from "@/store"
 import { toast } from "react-toastify"
 
+import { useMounted } from "@/hooks/use-mount"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +17,9 @@ export default function RoomPage({
 }) {
   const { userId, setUserId } = useAppStore()
   const ref = useRef<HTMLInputElement>(null)
+
+  const mounted = useMounted()
+  if (!mounted) return null
 
   if (!userId) {
     return (
@@ -48,5 +52,5 @@ export default function RoomPage({
   }
 
   console.log({ userId })
-  return <WithPlayerId roomId={roomId} playerId={userId} />
+  return <WithPlayerId roomId={roomId} userId={userId} />
 }

@@ -1,6 +1,6 @@
 import { Server as NetServer } from "http"
 import { NextApiRequest } from "next"
-import { IMsg, IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
+import { IBaseMsg, IMsg, IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
 import { IPlayer } from "@/ds/user"
 import { Server } from "socket.io"
 
@@ -44,35 +44,31 @@ export default async function handler(
         console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
         socket.rooms.forEach((r) => {
           if (r in gameManager) {
-            gameManager[r].memberLeave(socket.id)
+            gameManager[r].memberLeave()
           }
         })
       })
 
-      socket.on(SocketEvent.General, (msg: IMsg) => {
-        console.log(`received general msg: ${JSON.stringify(msg)}`)
-      })
-
-      socket.on(SocketEvent.UserJoinRoom, async (msg: IRoomMsg & IUserMsg) => {
-        console.log(SocketEvent.UserJoinRoom, socket.id)
-        const { roomId, id = socket.id, image } = msg
+      socket.on(SocketEvent.UserJoinRoom, async (msg: IMsg) => {
+        console.log(SocketEvent.UserJoinRoom, msg.userId)
+        const { roomId, userId, image } = msg
         await socket.join(roomId) // 这里要等待！
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
 
-        getRoom(server, roomId).memberJoin({ id, image })
+        getRoom(server, roomId).memberJoin({ userId, image })
       })
 
-      socket.on(SocketEvent.UserLeaveRoom, (msg: IRoomMsg) => {
-        getRoom(server, msg.roomId).memberLeave(socket.id)
+      socket.on(SocketEvent.UserLeaveRoom, (msg: IMsg) => {
+        getRoom(server, msg.roomId).memberLeave(msg.userId)
       })
 
-      socket.on(SocketEvent.UserPrepared, async (msg: IRoomMsg) => {
-        getRoom(server, msg.roomId).memberPrepare(socket.id)
+      socket.on(SocketEvent.UserPrepared, async (msg: IMsg) => {
+        getRoom(server, msg.roomId).memberPrepare(msg.userId)
       })
 
-      socket.on(SocketEvent.UserUnPrepare, async (msg: IRoomMsg) => {
-        getRoom(server, msg.roomId).memberUnPrepare(socket.id)
+      socket.on(SocketEvent.UserUnPrepare, async (msg: IMsg) => {
+        getRoom(server, msg.roomId).memberUnPrepare(msg.userId)
       })
     })
 

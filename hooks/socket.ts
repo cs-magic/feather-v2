@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
 
 import { socket } from "@/lib/socket"
 
@@ -18,10 +18,7 @@ export const defaultEvents: Event[] = [
 /**
  * ref: https://www.codeconcisely.com/posts/react-socket-io-hooks/
  */
-export function useSocketEvents(
-  events: Event[],
-  extra: { roomId: string; image: string }
-) {
+export function useSocketEvents(events: Event[], extra: IMsg) {
   console.log("using socket events")
   const { roomId, image } = extra
   const allEvents: Event[] = [...defaultEvents, ...events]
@@ -40,15 +37,11 @@ export function useSocketEvents(
     }
 
     socket.on("connect", () => {
-      if (roomId) {
-        // 客户端有可能都没有监听 UserJoinRoom，但是服务端我们要加，否则客户端容易bug
-        socket.emit(SocketEvent.UserJoinRoom, {
-          roomId,
-          content: `user ${socket.id} joined room ${roomId}`,
-          id: socket.id,
-          image,
-        } as IRoomMsg & IUserMsg)
-      }
+      // 客户端有可能都没有监听 UserJoinRoom，但是服务端我们要加，否则客户端容易bug
+      socket.emit(SocketEvent.UserJoinRoom, {
+        content: `user ${socket.id} joined room ${roomId}`,
+        ...extra,
+      } as IRoomMsg & IUserMsg)
     })
 
     return function () {

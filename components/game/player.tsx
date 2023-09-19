@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, IRoomMsg, SocketEvent } from "@/ds/socket"
 import { IPlayer, PlayerStateType } from "@/ds/user"
 import { useElementSize } from "@mantine/hooks"
 import { animated, useSpring } from "@react-spring/web"
@@ -66,7 +66,7 @@ export const PlayerStateComp = ({
   }
 }
 
-export const PlayerInner = ({ id, image, life = 3, x, state }: IPlayer) => {
+export const PlayerInner = ({ userId, image, life = 3, x, state }: IPlayer) => {
   return (
     <div className={"relative w-full"}>
       <AspectRatio ratio={3 / 4}>
@@ -86,7 +86,7 @@ export const PlayerInner = ({ id, image, life = 3, x, state }: IPlayer) => {
           "absolute bottom-0 w-full bg-cyan-900 text-center text-xs truncate px-2"
         }
       >
-        {id}
+        {userId}
       </div>
     </div>
   )
@@ -220,7 +220,11 @@ export const MainPlayer = ({
       <Button
         className={"absolute right-2 bottom-2"}
         onClick={() => {
-          socket.emit(SocketEvent.UserPrepared, { roomId } as IRoomMsg)
+          socket.emit(SocketEvent.UserPrepared, {
+            roomId,
+            userId: player.userId,
+            image: player.image,
+          } as IMsg)
         }}
       >
         准备

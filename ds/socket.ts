@@ -1,21 +1,19 @@
-export interface IMsg {
-  // type: SocketEvent
+export interface IBaseMsg {
   content?: string
 }
 
-export interface IUserMsg extends IMsg {
-  id?: string
+export interface IUserMsg extends IBaseMsg {
+  userId: string
   image: string
 }
 
-export interface IRoomMsg extends IMsg {
+export interface IRoomMsg extends IBaseMsg {
   roomId: string
 }
 
-export enum SocketEvent {
-  // general
-  General = "General",
+export interface IMsg extends IUserMsg, IRoomMsg {}
 
+export enum SocketEvent {
   // room
   UserJoinRoom = "UserJoinRoom",
   UserLeaveRoom = "UserLeaveRoom",
