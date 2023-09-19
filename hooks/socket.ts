@@ -23,6 +23,16 @@ export function useSocketEvents(events: Event[], extra: IMsg) {
   const { roomId, userImage } = extra
   const allEvents: Event[] = [...defaultEvents, ...events]
 
+  const cleanup = () => {
+    console.log("disconnecting")
+    socket.disconnect()
+
+    for (const event of allEvents) {
+      console.log("off handler of ", event.name)
+      socket.off(event.name)
+    }
+  }
+
   const init = async () => {
     // 要先唤醒一下服务器
     await fetch("/api/socket")
@@ -44,19 +54,16 @@ export function useSocketEvents(events: Event[], extra: IMsg) {
         socketId: socket.id,
       } as IFullMsg)
     })
-
-    return function () {
-      console.log("disconnecting")
-      socket.disconnect()
-
-      for (const event of allEvents) {
-        console.log("off handler of ", event.name)
-        socket.off(event.name)
-      }
-    }
   }
 
   useEffect(() => {
     void init()
+
+    window.addEventListener("beforeunload", cleanup)
+
+    return () => {
+      // react不会自己清除，ref: https://stackoverflow.com/a/61310052/9422455
+      window.removeEventListener("beforeunload", cleanup)
+    }
   }, [])
 }

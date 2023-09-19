@@ -8,6 +8,8 @@ export interface IPolarPos {
   r: number
   theta: number
   speed: number
+
+  // turbo: number
 }
 
 export interface ICartesianPos {

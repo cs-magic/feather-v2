@@ -41,13 +41,13 @@ export const useAppStore = create<StoreState>()(
       })),
       {
         name: "zustand",
-        version: 0.1,
+        version: 0.2,
         // @ts-ignore
         migrate: (persistedState: StoreState, version) => {
           // example
-          if (version === 0) {
+          if (version === 0.1) {
             // @ts-ignore
-            delete persistedState.app
+            delete persistedState.userImage
           }
           return persistedState
         },

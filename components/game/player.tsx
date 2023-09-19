@@ -74,6 +74,7 @@ export const PlayerInner = ({
   x,
   state,
   k,
+  socketId,
 }: IPlayer & { k: number }) => {
   return (
     <div className={"relative w-full shrink-0"}>
@@ -91,10 +92,13 @@ export const PlayerInner = ({
       <PlayerStateComp state={state} life={life} />
       <div
         className={
-          "absolute bottom-0 w-full bg-cyan-900 text-center text-xs truncate px-2"
+          "absolute bottom-0 w-full bg-cyan-900 text-center text-xs overflow-hidden px-2 inline-flex whitespace-nowrap "
         }
       >
-        {userId}
+        <span>{userId}</span>
+        <span>{" ("}</span>
+        <span className={"truncate"}>{socketId}</span>
+        <span>{")"}</span>
       </div>
 
       <p

@@ -49,7 +49,7 @@ export class Game {
     const i = this.members.findIndex(
       (m) => m.userId === user.userId && m.socketId !== user.socketId
     )
-    console.log("old index: ", i)
+    // console.log("old index: ", i)
     if (i >= 0) delete this.members[i]
 
     const k = this.members.length
