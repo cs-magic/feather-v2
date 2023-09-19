@@ -74,7 +74,7 @@ export const WithPlayerId = (msg: IMsg) => {
       className={"absolute inset-0 w-full h-full flex flex-col"}
       suppressHydrationWarning
     >
-      <div className={"w-full flex items-end"}>
+      <div className={"w-full flex items-end shrink-0"}>
         {game.members
           .filter((m) => m?.userId !== userId)
           .map((m) => (

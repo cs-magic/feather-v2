@@ -10,6 +10,7 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 
 import "react-toastify/dist/ReactToastify.css"
+import Head from "next/head"
 import { SocketEvent } from "@/ds/socket"
 
 import { useSocketEvents } from "@/hooks/socket"
@@ -35,15 +36,23 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <head />
+        <Head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          />
+        </Head>
+
         <body
           className={cn(
-            "h-screen bg-background font-sans antialiased",
+            "h-screen overflow-hidden bg-background font-sans antialiased",
             fontSans.variable
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            {children}
+            {/* main 里用了 --app-height 所以是必须的 */}
+            <main>{children}</main>
+
             <TailwindIndicator />
             {/*<Toaster richColors closeButton position="top-right" />*/}
             <ToastContainer hideProgressBar transition={Zoom} />

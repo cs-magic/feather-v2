@@ -59,6 +59,12 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
+  main {
+    height: 100vh;
+    /*height: -webkit-fill-available;*/
+    height: var(--app-height);
+  }
+
   #point {
     position: absolute;
     border-radius: 50%;

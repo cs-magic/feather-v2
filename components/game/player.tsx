@@ -75,7 +75,7 @@ export const PlayerInner = ({
   state,
 }: IPlayer) => {
   return (
-    <div className={"relative w-full"}>
+    <div className={"relative w-full shrink-0"}>
       <AspectRatio ratio={3 / 4}>
         <Image
           src={userImage}

@@ -75,14 +75,20 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
+  main {
+    height: 100vh;
+    /*height: -webkit-fill-available;*/
+    height: var(--app-height);
+  }
 
 
-  #point{
+  #point {
     position: absolute;
     border-radius: 50%;
     opacity: 0.85;
@@ -90,8 +96,9 @@
     height: 50px;
     width: 50px;
     background-color: aqua;
-    z-index:1;
+    z-index: 1;
   }
+
   .nipple {
     border: 1px solid #000;
   }
