@@ -9,10 +9,10 @@ export const Feather = ({ pos }: { pos: ICartesianPos }) => {
 
   return (
     <div
-      className={" w-[5%] -translate-x-1/2 -translate-y-1/2"}
+      className={"absolute w-[5%] -translate-x-1/2 -translate-y-1/2"}
       style={{
-        marginLeft: viewPointWidth * pos.x,
-        marginTop: viewPointHeight * pos.y,
+        left: viewPointWidth * pos.x,
+        top: viewPointHeight * pos.y,
       }}
     >
       <AspectRatio ratio={1 / 3}>

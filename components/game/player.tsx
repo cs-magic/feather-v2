@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { IMsg, IRoomMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, SocketEvent } from "@/ds/socket"
 import { IPlayer, PlayerStateType } from "@/ds/user"
 import { useElementSize } from "@mantine/hooks"
 import { animated, useSpring } from "@react-spring/web"
@@ -10,6 +10,7 @@ import { useGesture } from "@use-gesture/react"
 import { range } from "lodash"
 
 import { PlayerMaxLife } from "@/config/game"
+import { GameStateType } from "@/lib/game"
 import { limitRange } from "@/lib/range"
 import { socket } from "@/lib/socket"
 import { cn } from "@/lib/utils"
@@ -66,12 +67,18 @@ export const PlayerStateComp = ({
   }
 }
 
-export const PlayerInner = ({ userId, image, life = 3, x, state }: IPlayer) => {
+export const PlayerInner = ({
+  userId,
+  userImage,
+  life = 3,
+  x,
+  state,
+}: IPlayer) => {
   return (
     <div className={"relative w-full"}>
       <AspectRatio ratio={3 / 4}>
         <Image
-          src={image}
+          src={userImage}
           alt={"player"}
           fill
           className={cn("w-full pointer-events-none")}
@@ -112,9 +119,11 @@ export const SubPlayer = (player: IPlayer) => {
 let timer: ReturnType<typeof setInterval> // number
 
 export const MainPlayer = ({
+  gameStateType,
   player,
   roomId,
 }: {
+  gameStateType: GameStateType
   player: IPlayer
   roomId: string
 }) => {
@@ -217,18 +226,26 @@ export const MainPlayer = ({
         </div>
       </div>
 
-      <Button
-        className={"absolute right-2 bottom-2"}
-        onClick={() => {
-          socket.emit(SocketEvent.UserPrepared, {
-            roomId,
-            userId: player.userId,
-            image: player.image,
-          } as IMsg)
-        }}
-      >
-        准备
-      </Button>
+      {gameStateType === "waiting" &&
+        ["preparing", "prepared"].includes(player.state) && (
+          <Button
+            className={"absolute right-2 bottom-2"}
+            onClick={() => {
+              socket.emit(
+                player.state === "prepared"
+                  ? SocketEvent.UserUnPrepare
+                  : SocketEvent.UserPrepared,
+                {
+                  roomId,
+                  userId: player.userId,
+                  userImage: player.userImage,
+                } as IMsg
+              )
+            }}
+          >
+            {player.state === "prepared" ? "取消准备" : "准备"}
+          </Button>
+        )}
     </div>
   )
 }

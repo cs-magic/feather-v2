@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
-import { IRoomMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, SocketEvent } from "@/ds/socket"
 import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 import { toast } from "react-toastify"
 
 import { GameUpdateClientInterval } from "@/config/game"
 import { GameState, toUserPos } from "@/lib/game"
-import { socket } from "@/lib/socket"
 import useInterval from "@/hooks/interval"
 import { useSocketEvents } from "@/hooks/socket"
 import { Separator } from "@/components/ui/separator"
@@ -14,27 +13,29 @@ import { Feather } from "@/components/game/feather"
 import { MainPlayer, SubPlayer } from "@/components/game/player"
 import GroundLayer from "@/app/room/layers/01-ground.layer"
 import DialogLayer from "@/app/room/layers/04-dialog.layer"
-import Layer from "@/app/room/layers/Layer"
 
-export const WithPlayerId = ({
-  roomId,
-  userId,
-}: {
-  roomId: string
-  userId: string
-}) => {
+export const WithPlayerId = (msg: IMsg) => {
+  const { roomId, userId, userImage } = msg
+
   const [tick, setTick] = useState(0)
   const k = 0
 
-  const [game, setGame] = useState<GameState>()
+  const [game, setGame] = useState<GameState>({
+    state: "waiting",
+    members: [],
+    feathers: [],
+    tick: 0,
+    room: roomId,
+  })
 
   const { ref, width, height } = useElementSize()
 
-  const { setViewPointWidth, setViewPointHeight, userImage } = useAppStore()
-  const mainPlayer = game?.members.filter((m) => m?.userId === userId)[0]
+  const { setViewPointWidth, setViewPointHeight } = useAppStore()
+  const mainPlayer = game.members.filter((m) => m.userId === userId)[0]
+  const n = game.members.length
 
   useInterval(() => {
-    if (game?.state === "playing") {
+    if (game.state === "playing") {
       setTick((tick) => tick + 1)
     }
   }, GameUpdateClientInterval)
@@ -43,7 +44,7 @@ export const WithPlayerId = ({
     [
       {
         name: SocketEvent.UserJoinRoom,
-        handler: (msg: IRoomMsg) => {
+        handler: (msg: IMsg) => {
           console.log("UserJoinRoom: ", msg)
           toast(msg.content)
         },
@@ -52,11 +53,12 @@ export const WithPlayerId = ({
         name: SocketEvent.Game,
         handler: (msg: GameState) => {
           console.log("synced game: ", msg)
+
           setGame(msg)
         },
       },
     ],
-    { roomId, image: userImage, userId }
+    msg
   )
 
   useEffect(() => {
@@ -64,9 +66,7 @@ export const WithPlayerId = ({
     setViewPointHeight(height)
   }, [width, height])
 
-  const n = (game?.members.length ?? 0) - 1
-
-  console.log("members: ", game?.members)
+  if (!mainPlayer) return null
 
   return (
     <div
@@ -74,7 +74,7 @@ export const WithPlayerId = ({
       suppressHydrationWarning
     >
       <div className={"w-full flex items-end"}>
-        {game?.members
+        {game.members
           .filter((m) => m?.userId !== userId)
           .map((m) => (
             <div className={"grow basis-0"} key={m.userId}>
@@ -87,19 +87,27 @@ export const WithPlayerId = ({
       <div className={"grow relative"} ref={ref}>
         <GroundLayer />
 
-        <Layer>
-          {game?.feathers
-            .map((polarPos) => toUserPos(polarPos, k, n))
-            .map((cartesianPos, index) => (
-              <Feather key={index} pos={cartesianPos} />
-            ))}
-        </Layer>
+        {game.feathers
+          .map((polarPos) => toUserPos(polarPos, k, n))
+          .map((cartesianPos, index) => (
+            <Feather key={index} pos={cartesianPos} />
+          ))}
 
-        <DialogLayer state={game?.state ?? "waiting"} />
+        <DialogLayer
+          gameState={game.state}
+          playerState={mainPlayer.state}
+          {...msg}
+        />
       </div>
 
       <Separator orientation={"horizontal"} />
-      {mainPlayer && <MainPlayer roomId={roomId} player={mainPlayer} />}
+      {mainPlayer && (
+        <MainPlayer
+          roomId={roomId}
+          player={mainPlayer}
+          gameStateType={game.state}
+        />
+      )}
     </div>
   )
 }

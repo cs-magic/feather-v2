@@ -1,7 +1,6 @@
 import { Server as NetServer } from "http"
 import { NextApiRequest } from "next"
-import { IBaseMsg, IMsg, IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
-import { IPlayer } from "@/ds/user"
+import { IMsg, SocketEvent } from "@/ds/socket"
 import { Server } from "socket.io"
 
 import { NextApiResponseServerIO, SocketIOServer } from "@/types/socket"
@@ -51,12 +50,12 @@ export default async function handler(
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IMsg) => {
         console.log(SocketEvent.UserJoinRoom, msg.userId)
-        const { roomId, userId, image } = msg
+        const { roomId, userId, userImage } = msg
         await socket.join(roomId) // 这里要等待！
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
 
-        getRoom(server, roomId).memberJoin({ userId, image })
+        getRoom(server, roomId).memberJoin(msg)
       })
 
       socket.on(SocketEvent.UserLeaveRoom, (msg: IMsg) => {

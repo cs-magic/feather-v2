@@ -1,4 +1,3 @@
-import { Socket } from "net"
 import { ICartesianPos, IPolarPos } from "@/ds/general"
 import { SocketEvent } from "@/ds/socket"
 import { IPlayer, IUser } from "@/ds/user"
@@ -9,10 +8,12 @@ import {
   FeatherSpeed,
   GameUpdateServerInterval,
 } from "@/config/game"
-import { socket } from "@/lib/socket"
 import { initPlayerFromUser } from "@/lib/user"
 
-export type GameStateType = "waiting" | "playing" | "pause" | "stopped"
+/**
+ * 本来还加了 stop 状态，但是实际是一局局连着玩的，所以暂时没必要。。
+ */
+export type GameStateType = "waiting" | "playing" | "pause"
 
 export interface GameState {
   state: GameStateType
@@ -43,6 +44,7 @@ export class GameRoom {
   }
 
   private sync() {
+    this.members = this.members.filter((x) => !!x)
     this.server.to(this.room).emit(SocketEvent.Game, this.data())
   }
 
@@ -102,7 +104,8 @@ export class GameRoom {
       this.tick += 1
       this.feathers.forEach((feature) => {
         if (feature.r >= 1) {
-          this.state = "stopped"
+          this.state = "waiting"
+          this.members.forEach((m) => (m.state = "idle"))
         } else {
           const dir = feature.invert ? -1 : 1
           feature.r += (dir * FeatherSpeed * GameUpdateServerInterval) / 1000
@@ -118,6 +121,7 @@ export class GameRoom {
     if (this.canStart()) {
       console.log("=== game started ===")
       this.state = "playing"
+      this.feathers = []
     }
   }
 
@@ -132,6 +136,14 @@ export class GameRoom {
   }
 }
 
+/**
+ * 返回
+ *  - x: [0: 1]， 从左到右
+ *  - y: [0: 1]，从上到下
+ * @param pos
+ * @param k
+ * @param n
+ */
 export const toUserPos = (
   pos: IPolarPos,
   k: number,

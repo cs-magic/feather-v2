@@ -15,7 +15,7 @@ export default function RoomPage({
 }: {
   params: { id: string }
 }) {
-  const { userId, setUserId } = useAppStore()
+  const { userId, setUserId, userImage } = useAppStore()
   const ref = useRef<HTMLInputElement>(null)
 
   const mounted = useMounted()
@@ -52,5 +52,5 @@ export default function RoomPage({
   }
 
   console.log({ userId })
-  return <WithPlayerId roomId={roomId} userId={userId} />
+  return <WithPlayerId roomId={roomId} userId={userId} userImage={userImage} />
 }

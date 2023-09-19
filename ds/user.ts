@@ -1,6 +1,6 @@
 export interface IUser {
   userId: string
-  image: string
+  userImage: string
 }
 
 export type PlayerStateType = "preparing" | "prepared" | "playing" | "idle"

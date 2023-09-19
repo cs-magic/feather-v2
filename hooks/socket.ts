@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { IMsg, IRoomMsg, IUserMsg, SocketEvent } from "@/ds/socket"
+import { IMsg, SocketEvent } from "@/ds/socket"
 
 import { socket } from "@/lib/socket"
 
@@ -20,7 +20,7 @@ export const defaultEvents: Event[] = [
  */
 export function useSocketEvents(events: Event[], extra: IMsg) {
   console.log("using socket events")
-  const { roomId, image } = extra
+  const { roomId, userImage } = extra
   const allEvents: Event[] = [...defaultEvents, ...events]
 
   const init = async () => {
@@ -41,7 +41,7 @@ export function useSocketEvents(events: Event[], extra: IMsg) {
       socket.emit(SocketEvent.UserJoinRoom, {
         content: `user ${socket.id} joined room ${roomId}`,
         ...extra,
-      } as IRoomMsg & IUserMsg)
+      } as IMsg)
     })
 
     return function () {

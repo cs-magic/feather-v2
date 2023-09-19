@@ -1,17 +1,12 @@
+import { IUser } from "./user"
+
 export interface IBaseMsg {
   content?: string
 }
 
-export interface IUserMsg extends IBaseMsg {
-  userId: string
-  image: string
-}
-
-export interface IRoomMsg extends IBaseMsg {
+export interface IMsg extends IUser, IBaseMsg {
   roomId: string
 }
-
-export interface IMsg extends IUserMsg, IRoomMsg {}
 
 export enum SocketEvent {
   // room
