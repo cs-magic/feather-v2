@@ -45,6 +45,7 @@ export class Game {
 
   private sync() {
     console.log("syncing ...")
+    console.log(this.members)
     this.members = this.members.filter((x) => !!x)
     this.server.to(this.roomId).emit(SocketEvent.GameState, this.data())
   }
@@ -54,6 +55,7 @@ export class Game {
     const i = this.members.findIndex(
       (m) => m.userId === user.userId && m.socketId !== user.socketId
     )
+    console.log("old index: ", i)
     if (i >= 0) delete this.members[i]
 
     this.members.push(initPlayerFromUser(user))
@@ -70,7 +72,8 @@ export class Game {
   public memberPrepare(socketId: string) {
     const player = this.members.find((p) => p.socketId === socketId)!
     const { state } = player
-    player.state = state === "preparing" ? "prepared" : "preparing"
+    if (player.state === "idle") player.state = "prepared" // 回局
+    else player.state = state === "prepared" ? "preparing" : "prepared"
     this.sync()
 
     // 最后一个人准备后自动开局
@@ -79,11 +82,13 @@ export class Game {
 
   public memberMove(socketId: string, { x }: { x: number }) {
     this.members.find((p) => p.socketId === socketId)!.x = x
+    this.sync()
   }
 
   public memberShoot(socketId: string, power: number) {
     // todo
     // this.members.find((p) => p.socketId === socketId)!
+    this.sync()
   }
 
   public data(): GameState {
@@ -94,7 +99,7 @@ export class Game {
       members: this.members,
       feathers: this.feathers,
     } as GameState
-    console.log("data: ", data)
+    // console.log("data: ", data)
     return data
   }
 

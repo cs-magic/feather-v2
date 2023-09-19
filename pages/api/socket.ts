@@ -56,12 +56,19 @@ export default async function handler(
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IFullMsg) => {
         const { roomId } = msg
+
+        // const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
+        console.log(
+          SocketEvent.UserJoinRoom,
+          { msg },
+          { connected: socket.connected }
+        )
+
+        if (!socket.connected || user2room[socket.id]) return // 可能是HMR搞的鬼
+
         user2room[socket.id] = roomId // 初始化
 
         await socket.join(roomId) // 这里要等待！
-
-        // const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
-        console.log(SocketEvent.UserJoinRoom, { msg })
 
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
@@ -72,7 +79,7 @@ export default async function handler(
       // note: 为了能让代码减少冗余，我们使用了 eval 函数；另一种也可行但没这个简短的办法是用 bind；除此之外都会出现 this undefined的问题
       socketHandlers.forEach(({ name, handler }) => {
         socket.on(name, (...args: any[]) => {
-          // console.log("handler: ", { name, sid: socket.id, args })
+          console.log("handler: ", { name, sid: socket.id, args })
           eval(`g().${handler}("${socket.id}", ...args)`)
         })
       })
