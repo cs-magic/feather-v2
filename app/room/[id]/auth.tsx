@@ -26,7 +26,7 @@ export const WithPlayerId = (msg: IMsg) => {
     members: [],
     feathers: [],
     tick: 0,
-    room: roomId,
+    roomId: roomId,
   })
 
   const { ref, width, height } = useElementSize()

@@ -5,7 +5,7 @@ import { Server } from "socket.io"
 
 import { NextApiResponseServerIO, SocketIOServer } from "@/types/socket"
 import { SOCKET_IO_ENDPOINT } from "@/config/site"
-import { GameRoom } from "@/lib/game"
+import { Game } from "@/lib/game"
 
 export const config = {
   api: {
@@ -15,12 +15,20 @@ export const config = {
 
 const user2room: Record<string, string> = {}
 
-const gameManager: Record<string, GameRoom> = {}
+const gameManager: Record<string, Game> = {}
 
 const getGameFromSocket = (server: SocketIOServer, roomId: string) => {
   if (roomId in gameManager) return gameManager[roomId]
-  return (gameManager[roomId] = new GameRoom(server, roomId))
+  return (gameManager[roomId] = new Game(server, roomId))
 }
+
+export const socketHandlers: { name: string; handler: keyof Game }[] = [
+  { name: "disconnecting", handler: "memberLeaveRoom" },
+  { name: SocketEvent.UserLeaveRoom, handler: "memberLeaveRoom" },
+  { name: SocketEvent.UserPrepare, handler: "memberPrepare" },
+  { name: SocketEvent.UserMove, handler: "memberMove" },
+  { name: SocketEvent.UserShoot, handler: "memberShoot" },
+]
 
 /**
  * 我们强制每个用户同一时间、只能在某一浏览器、在某一个对战室内，因此，可以构建 socket.id -> room.id 的哈希表
@@ -41,21 +49,16 @@ export default async function handler(
     const server = new Server(httpServer, {
       path: SOCKET_IO_ENDPOINT,
       addTrailingSlash: false, // next13必加，巨坑，ref: https://github.com/vercel/next.js/issues/49334
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-      },
     })
 
     server.on("connection", (socket) => {
-      const getGame = () => getGameFromSocket(server, user2room[socket.id])
+      const g = () => getGameFromSocket(server, user2room[socket.id])
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IFullMsg) => {
         const { roomId } = msg
+        user2room[socket.id] = roomId // 初始化
 
         await socket.join(roomId) // 这里要等待！
-
-        user2room[socket.id] = roomId // 初始化
 
         // const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
         console.log(SocketEvent.UserJoinRoom, { msg })
@@ -63,48 +66,16 @@ export default async function handler(
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
         socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
 
-        getGame().memberJoinRoom(msg)
-      })
-      ;[
-        { name: "disconnecting", handler: getGame().memberLeaveRoom },
-        {
-          name: SocketEvent.UserLeaveRoom,
-          handler: getGame().memberLeaveRoom,
-        },
-        {
-          name: SocketEvent.UserSwitchPreparation,
-          handler: getGame().memberSwitchPreparation,
-        },
-        { name: SocketEvent.UserMove, handler: getGame().memberMove },
-        { name: SocketEvent.UserShoot, handler: getGame().memberShoot },
-      ].forEach(({ name, handler }) => {
-        console.log("adding handler: ", name)
-        socket.on(name, (args: any) => {
-          handler(socket.id, args)
-        })
+        g().memberJoinRoom(msg)
       })
 
-      // socket.on("disconnecting", () => {
-      //   console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
-      //   // 遍历所有房间（不过这里没必要）: `socket.rooms.forEach((r) => {`
-      //   game.memberLeaveRoom(socket.id)
-      // })
-      //
-      // socket.on(SocketEvent.UserLeaveRoom, () => {
-      //   game.memberLeaveRoom(socket.id)
-      // })
-      //
-      // socket.on(SocketEvent.UserSwitchPreparation, async () => {
-      //   game.memberSwitchPreparation(socket.id)
-      // })
-      //
-      // socket.on(SocketEvent.UserMove, async (x: number) => {
-      //   game.memberMove(socket.id, x)
-      // })
-      //
-      // socket.on(SocketEvent.UserShoot, async (power: number) => {
-      //   game.memberShoot(socket.id, power)
-      // })
+      // note: 为了能让代码减少冗余，我们使用了 eval 函数；另一种也可行但没这个简短的办法是用 bind；除此之外都会出现 this undefined的问题
+      socketHandlers.forEach(({ name, handler }) => {
+        socket.on(name, (...args: any[]) => {
+          // console.log("handler: ", { name, sid: socket.id, args })
+          eval(`g().${handler}("${socket.id}", ...args)`)
+        })
+      })
     })
 
     // append SocketIO server to Next.js socket server response

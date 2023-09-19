@@ -18,22 +18,22 @@ export type GameStateType = "waiting" | "playing" | "pause"
 export interface GameState {
   state: GameStateType
   tick: number
-  room: string
+  roomId: string
   members: IPlayer[]
   feathers: IPolarPos[]
 }
 
-export class GameRoom {
-  private readonly room: string
+export class Game {
+  private readonly roomId: string
   private tick = 0
   public state: GameStateType = "waiting"
   private server: SocketIOServer
   private members: IPlayer[] = []
   public feathers: IPolarPos[] = []
 
-  constructor(server: SocketIOServer, room: string) {
+  constructor(server: SocketIOServer, roomId: string) {
     this.server = server
-    this.room = room
+    this.roomId = roomId
   }
 
   public canStart(): boolean {
@@ -46,7 +46,7 @@ export class GameRoom {
   private sync() {
     console.log("syncing ...")
     this.members = this.members.filter((x) => !!x)
-    this.server.to(this.room).emit(SocketEvent.GameState, this.data())
+    this.server.to(this.roomId).emit(SocketEvent.GameState, this.data())
   }
 
   public memberJoinRoom(user: IUser & ISocket) {
@@ -67,7 +67,7 @@ export class GameRoom {
     this.sync()
   }
 
-  public memberSwitchPreparation(socketId: string) {
+  public memberPrepare(socketId: string) {
     const player = this.members.find((p) => p.socketId === socketId)!
     const { state } = player
     player.state = state === "preparing" ? "prepared" : "preparing"
@@ -77,7 +77,7 @@ export class GameRoom {
     if (player.state === "prepared") this.tryStart()
   }
 
-  public memberMove(socketId: string, x: number) {
+  public memberMove(socketId: string, { x }: { x: number }) {
     this.members.find((p) => p.socketId === socketId)!.x = x
   }
 
@@ -90,10 +90,10 @@ export class GameRoom {
     const data = {
       state: this.state,
       tick: this.tick,
-      room: this.room,
+      roomId: this.roomId,
       members: this.members,
       feathers: this.feathers,
-    }
+    } as GameState
     console.log("data: ", data)
     return data
   }

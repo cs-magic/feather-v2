@@ -144,7 +144,7 @@ export const MainPlayer = ({
       onDragStart: () => {
         timer = setInterval(() => {
           const t = Math.min(style.t.get() + 10, 100)
-          console.log({ t, s })
+          // console.log({ t, s })
           if (t > 90 && s !== "progress-error") {
             setS("progress-error")
           }
@@ -186,7 +186,7 @@ export const MainPlayer = ({
     {}
   )
 
-  console.log({ s, t: style.t.get() })
+  // console.log({ s, t: style.t.get() })
   return (
     <div className={"shrink-0 w-full relative"} ref={ref}>
       <animated.div
@@ -232,7 +232,7 @@ export const MainPlayer = ({
         ["preparing", "prepared"].includes(player.state) && (
           <Button
             className={"absolute right-2 bottom-2"}
-            onClick={() => socket.emit(SocketEvent.UserSwitchPreparation)}
+            onClick={() => socket.emit(SocketEvent.UserPrepare)}
           >
             {player.state === "prepared" ? "取消准备" : "准备"}
           </Button>

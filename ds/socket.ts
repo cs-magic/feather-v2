@@ -16,7 +16,7 @@ export enum SocketEvent {
   UserJoinRoom = "UserJoinRoom",
   UserLeaveRoom = "UserLeaveRoom",
 
-  UserSwitchPreparation = "UserSwitchPreparation",
+  UserPrepare = "UserPrepare",
 
   UserMove = "UserMove",
   UserShoot = "UserShoot",
