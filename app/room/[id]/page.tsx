@@ -1,9 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { IMsg } from "@/ds/socket"
 import { useAppStore } from "@/store"
 import { toast } from "react-toastify"
 
+import { socket } from "@/lib/socket"
 import { useMounted } from "@/hooks/use-mount"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,7 +17,7 @@ export default function RoomPage({
 }: {
   params: { id: string }
 }) {
-  const { userId, setUserId, userImage } = useAppStore()
+  const { userId, setUserId, userImage, socketId, setSocketId } = useAppStore()
   const ref = useRef<HTMLInputElement>(null)
 
   const mounted = useMounted()
@@ -51,6 +53,7 @@ export default function RoomPage({
     )
   }
 
-  console.log({ userId })
-  return <WithPlayerId roomId={roomId} userId={userId} userImage={userImage} />
+  const msg: IMsg = { userId, userImage, roomId }
+  console.log("init msg: ", msg)
+  return <WithPlayerId {...msg} />
 }

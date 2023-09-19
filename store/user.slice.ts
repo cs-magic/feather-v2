@@ -7,6 +7,9 @@
 import { type StoreSlice } from "@/store/index"
 
 export interface UserState {
+  socketId?: string
+  setSocketId: (v: string | undefined) => void
+
   userId?: string
   setUserId: (v: string | undefined) => void
 
@@ -19,6 +22,12 @@ export const createUserSlice: StoreSlice<UserState> = (
   getState,
   store
 ) => ({
+  socketId: undefined,
+  setSocketId: (v) =>
+    setState((state) => {
+      state.socketId = v
+    }),
+
   userId: undefined,
   setUserId: (v) =>
     setState((state) => {

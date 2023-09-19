@@ -1,6 +1,6 @@
 import { ICartesianPos, IPolarPos } from "@/ds/general"
 import { SocketEvent } from "@/ds/socket"
-import { IPlayer, IUser } from "@/ds/user"
+import { IPlayer, ISocket, IUser } from "@/ds/user"
 
 import { SocketIOServer } from "@/types/socket"
 import {
@@ -24,12 +24,12 @@ export interface GameState {
 }
 
 export class GameRoom {
+  private readonly room: string
+  private tick = 0
   public state: GameStateType = "waiting"
   private server: SocketIOServer
-  private room: string
   private members: IPlayer[] = []
   public feathers: IPolarPos[] = []
-  private tick = 0
 
   constructor(server: SocketIOServer, room: string) {
     this.server = server
@@ -44,13 +44,16 @@ export class GameRoom {
   }
 
   private sync() {
+    console.log("syncing ...")
     this.members = this.members.filter((x) => !!x)
     this.server.to(this.room).emit(SocketEvent.GameState, this.data())
   }
 
-  public memberJoinRoom(user: IUser) {
-    // 重连需要删除旧的socket
-    const i = this.members.findIndex((m) => m.userId === user.userId)
+  public memberJoinRoom(user: IUser & ISocket) {
+    // 重连需要删除旧的socket（uid一致，但sid不一致）
+    const i = this.members.findIndex(
+      (m) => m.userId === user.userId && m.socketId !== user.socketId
+    )
     if (i >= 0) delete this.members[i]
 
     this.members.push(initPlayerFromUser(user))

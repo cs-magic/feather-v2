@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { IMsg, SocketEvent } from "@/ds/socket"
+import { IFullMsg, IMsg, SocketEvent } from "@/ds/socket"
 import { useAppStore } from "@/store"
 import { useElementSize } from "@mantine/hooks"
 import { toast } from "react-toastify"
 
 import { GameUpdateClientInterval } from "@/config/game"
 import { GameState, toUserPos } from "@/lib/game"
+import { socket } from "@/lib/socket"
 import useInterval from "@/hooks/interval"
 import { useSocketEvents } from "@/hooks/socket"
 import { Separator } from "@/components/ui/separator"
@@ -44,7 +45,7 @@ export const WithPlayerId = (msg: IMsg) => {
     [
       {
         name: SocketEvent.UserJoinRoom,
-        handler: (msg: IMsg) => {
+        handler: (msg: IFullMsg) => {
           console.log("UserJoinRoom: ", msg)
           toast(msg.content)
         },
@@ -53,7 +54,6 @@ export const WithPlayerId = (msg: IMsg) => {
         name: SocketEvent.GameState,
         handler: (msg: GameState) => {
           console.log("synced game: ", msg)
-
           setGame(msg)
         },
       },
@@ -66,7 +66,8 @@ export const WithPlayerId = (msg: IMsg) => {
     setViewPointHeight(height)
   }, [width, height])
 
-  if (!mainPlayer) return null
+  console.log({ socket, mainPlayer, msg })
+  if (!socket || !mainPlayer) return null
 
   return (
     <div

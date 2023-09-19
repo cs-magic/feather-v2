@@ -1,4 +1,4 @@
-import { IUser } from "./user"
+import { ISocket, IUser } from "./user"
 
 export interface IBaseMsg {
   content?: string
@@ -7,6 +7,8 @@ export interface IBaseMsg {
 export interface IMsg extends IUser, IBaseMsg {
   roomId: string
 }
+
+export interface IFullMsg extends IMsg, ISocket {}
 
 export enum SocketEvent {
   GameState = "GameState",

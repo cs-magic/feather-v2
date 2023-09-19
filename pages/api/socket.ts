@@ -1,6 +1,6 @@
 import { Server as NetServer } from "http"
 import { NextApiRequest } from "next"
-import { IMsg, SocketEvent } from "@/ds/socket"
+import { IFullMsg, IMsg, SocketEvent } from "@/ds/socket"
 import { Server } from "socket.io"
 
 import { NextApiResponseServerIO, SocketIOServer } from "@/types/socket"
@@ -51,40 +51,57 @@ export default async function handler(
       const game = getGame(server, user2room[socket.id])
 
       socket.on(SocketEvent.UserJoinRoom, async (msg: IMsg) => {
-        console.log(SocketEvent.UserJoinRoom, msg.userId)
-        const { roomId, userId, userImage } = msg
+        const { roomId } = msg
 
         await socket.join(roomId) // 这里要等待！
 
         user2room[socket.id] = roomId
 
+        const fullMsg: IFullMsg = { ...msg, socketId: socket.id }
+        console.log(SocketEvent.UserJoinRoom, { msg, fullMsg })
+
         // 自己是排除的，ref: https://socket.io/docs/v4/server-api/#sockettoroom
-        socket.to(roomId).emit(SocketEvent.UserJoinRoom, msg)
+        socket.to(roomId).emit(SocketEvent.UserJoinRoom, fullMsg)
 
-        game.memberJoinRoom(msg)
+        game.memberJoinRoom(fullMsg)
+      })
+      ;[
+        { event: "disconnecting", handler: game.memberLeaveRoom },
+        { event: SocketEvent.UserLeaveRoom, handler: game.memberLeaveRoom },
+        {
+          event: SocketEvent.UserSwitchPreparation,
+          handler: game.memberSwitchPreparation,
+        },
+        { event: SocketEvent.UserMove, handler: game.memberMove },
+        { event: SocketEvent.UserShoot, handler: game.memberShoot },
+      ].forEach(({ event, handler }) => {
+        console.log("adding handler: ", event)
+        socket.on(event, (args: any) => {
+          handler(socket.id, args)
+        })
       })
 
-      socket.on("disconnecting", () => {
-        console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
-        // 遍历所有房间（不过这里没必要）: `socket.rooms.forEach((r) => {`
-        game.memberLeaveRoom(socket.id)
-      })
-
-      socket.on(SocketEvent.UserLeaveRoom, () => {
-        game.memberLeaveRoom(socket.id)
-      })
-
-      socket.on(SocketEvent.UserSwitchPreparation, async () => {
-        game.memberSwitchPreparation(socket.id)
-      })
-
-      socket.on(SocketEvent.UserMove, async (x: number) => {
-        game.memberMove(socket.id, x)
-      })
-
-      socket.on(SocketEvent.UserShoot, async (power: number) => {
-        game.memberShoot(socket.id, power)
-      })
+      // socket.on("disconnecting", () => {
+      //   console.log("rooms before disconnecting: ", socket.rooms) // the Set contains at least the socket ID
+      //   // 遍历所有房间（不过这里没必要）: `socket.rooms.forEach((r) => {`
+      //   game.memberLeaveRoom(socket.id)
+      // })
+      //
+      // socket.on(SocketEvent.UserLeaveRoom, () => {
+      //   game.memberLeaveRoom(socket.id)
+      // })
+      //
+      // socket.on(SocketEvent.UserSwitchPreparation, async () => {
+      //   game.memberSwitchPreparation(socket.id)
+      // })
+      //
+      // socket.on(SocketEvent.UserMove, async (x: number) => {
+      //   game.memberMove(socket.id, x)
+      // })
+      //
+      // socket.on(SocketEvent.UserShoot, async (power: number) => {
+      //   game.memberShoot(socket.id, power)
+      // })
     })
 
     // append SocketIO server to Next.js socket server response
