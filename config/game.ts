@@ -2,7 +2,6 @@ export const GameUpdateServerInterval = 20 // 50 fps
 export const GameUpdateClientInterval = 20 // 50 fps
 
 export const FeatherAddInterval = 3000 // mile-second
-export const FeatherSpeed = 0.1 // step per second
 
 export const PlayerMinX = 0.05
 export const PlayerMaxX = 0.95

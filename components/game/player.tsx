@@ -73,7 +73,8 @@ export const PlayerInner = ({
   life = 3,
   x,
   state,
-}: IPlayer) => {
+  k,
+}: IPlayer & { k: number }) => {
   return (
     <div className={"relative w-full shrink-0"}>
       <AspectRatio ratio={3 / 4}>
@@ -95,11 +96,20 @@ export const PlayerInner = ({
       >
         {userId}
       </div>
+
+      <p
+        className={cn(
+          "absolute left-2 top-2 w-4 h-4 text-white flex items-center justify-center"
+          // "bg-red-500"
+        )}
+      >
+        {k}
+      </p>
     </div>
   )
 }
 
-export const SubPlayer = (player: IPlayer) => {
+export const SubPlayer = ({ player, k }: { player: IPlayer; k: number }) => {
   const { ref, width } = useElementSize()
   return (
     <div className={"shrink-0 w-full relative"} ref={ref}>
@@ -109,7 +119,7 @@ export const SubPlayer = (player: IPlayer) => {
           marginLeft: width * (player.x ?? 0.5),
         }}
       >
-        <PlayerInner {...player} />
+        <PlayerInner {...player} k={k} />
       </div>
     </div>
   )
@@ -122,10 +132,12 @@ export const MainPlayer = ({
   gameStateType,
   player,
   roomId,
+  k,
 }: {
   gameStateType: GameStateType
   player: IPlayer
   roomId: string
+  k: number
 }) => {
   const { ref, width } = useElementSize()
   const startMarginLeft = width >> 1
@@ -133,6 +145,7 @@ export const MainPlayer = ({
   const { ref: refImage, width: imageWidth } = useElementSize()
 
   const [s, setS] = useState("progress-info")
+  const [isMoving, setMoving] = useState(false)
 
   const [style, api] = useSpring(
     () => ({ marginLeft: startMarginLeft, t: 0 }),
@@ -158,6 +171,12 @@ export const MainPlayer = ({
         if (s !== "progress-info") {
           setS("progress-info")
         }
+        if (!isMoving) {
+          const f = style.t.get() / 100
+          console.log("shooting: ", { f })
+          socket.emit(SocketEvent.UserShoot, { f })
+        }
+        if (isMoving) setMoving(false)
       },
       onDrag: ({
         active,
@@ -167,6 +186,9 @@ export const MainPlayer = ({
         startTime,
         timeStamp,
       }) => {
+        if (Math.abs(mx) > 20 && !isMoving) {
+          setMoving(true)
+        }
         const pw = imageWidth / 2
         const marginLeft = limitRange(startMarginLeft + ox, pw, width - pw)
         const x = marginLeft / width
@@ -196,7 +218,7 @@ export const MainPlayer = ({
         {...bind()}
         suppressHydrationWarning // ref: https://nextjs.org/docs/messages/react-hydration-error#solution-3-using-suppresshydrationwarning
       >
-        <PlayerInner {...player} />
+        <PlayerInner {...player} k={k} />
       </animated.div>
 
       <div className={"absolute left-2 top-2 w-full"}>

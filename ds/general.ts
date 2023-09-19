@@ -7,7 +7,7 @@
 export interface IPolarPos {
   r: number
   theta: number
-  invert?: boolean
+  speed: number
 }
 
 export interface ICartesianPos {

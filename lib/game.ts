@@ -3,12 +3,7 @@ import { SocketEvent } from "@/ds/socket"
 import { IPlayer, ISocket, IUser } from "@/ds/user"
 
 import { SocketIOServer } from "@/types/socket"
-import {
-  FeatherAddInterval,
-  FeatherSpeed,
-  GameUpdateServerInterval,
-} from "@/config/game"
-import { initPlayerFromUser } from "@/lib/user"
+import { FeatherAddInterval, GameUpdateServerInterval } from "@/config/game"
 
 /**
  * 本来还加了 stop 状态，但是实际是一局局连着玩的，所以暂时没必要。。
@@ -44,8 +39,7 @@ export class Game {
   }
 
   private sync() {
-    console.log("syncing ...")
-    console.log(this.members)
+    // console.log("syncing ...", this.members)
     this.members = this.members.filter((x) => !!x)
     this.server.to(this.roomId).emit(SocketEvent.GameState, this.data())
   }
@@ -58,7 +52,13 @@ export class Game {
     console.log("old index: ", i)
     if (i >= 0) delete this.members[i]
 
-    this.members.push(initPlayerFromUser(user))
+    const k = this.members.length
+    this.members.push({
+      ...user,
+      life: 3,
+      x: 0.5,
+      state: "preparing",
+    })
     this.sync()
   }
 
@@ -85,9 +85,49 @@ export class Game {
     this.sync()
   }
 
-  public memberShoot(socketId: string, power: number) {
-    // todo
-    // this.members.find((p) => p.socketId === socketId)!
+  /**
+   *
+   * @param socketId
+   * @param f [0: 1]
+   */
+  public memberShoot(socketId: string, { f }: { f: number }) {
+    const n = this.members.length
+    const k = this.members.findIndex((p) => p.socketId === socketId)
+    const u = this.members[k]
+    const x = u.x
+    const dagStart = ((2 * k - 1) / n) * Math.PI
+    const dagOffset = x / 2 / Math.PI
+    const dag = dagStart + dagOffset
+    const tolerance = 0.1
+    const distanceMin = 0.1
+    const ff = f === 1 ? 2 : f // 加成力
+    const distanceMax = distanceMin + ff / 10
+
+    const fs = this.feathers.filter(
+      (feather) =>
+        dag - tolerance <= feather.theta &&
+        feather.theta <= dag + tolerance &&
+        feather.r >= 1 - distanceMax
+    )
+    fs.forEach((feather) => {
+      feather.r = -feather.r
+      feather.speed = -feather.speed * Math.abs(feather.r) * ff
+    })
+    console.log({
+      feathers: this.feathers,
+      f,
+      ff,
+      dagStart,
+      dagOffset,
+      dag,
+      n,
+      k,
+      u,
+      x,
+      distanceMin,
+      distanceMax,
+      fsLen: fs.length,
+    })
     this.sync()
   }
 
@@ -107,6 +147,7 @@ export class Game {
     this.feathers.push({
       r: 0,
       theta: (Math.random() - 0.5) * 2 * Math.PI,
+      speed: 0.1,
       // (Math.random() / 2) * 2 * Math.PI,
     })
   }
@@ -120,16 +161,16 @@ export class Game {
   private updateFeathersInterval = setInterval(() => {
     if (this.state === "playing") {
       this.tick += 1
-      this.feathers.forEach((feature) => {
-        if (feature.r >= 1) {
+      this.feathers.forEach((f) => {
+        if (f.r >= 1) {
           this.state = "waiting"
           this.members.forEach((m) => (m.state = "idle"))
         } else {
-          const dir = feature.invert ? -1 : 1
-          feature.r += (dir * FeatherSpeed * GameUpdateServerInterval) / 1000
+          // 羽毛的速度应该限制在5-10秒内跑完1的距离，默认每秒.1，即每帧 interval * .1 / 10000
+          f.r += (f.speed * GameUpdateServerInterval) / 1000
         }
       })
-      console.log(`syncing: `, this.data())
+      // console.log(`syncing: `, this.data())
       // 还在运行，也可能这一轮终止了，但不管如何，都传输一下
       this.sync()
     }

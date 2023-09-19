@@ -34,7 +34,7 @@ export const createUserSlice: StoreSlice<UserState> = (
       state.userId = v
     }),
 
-  userImage: "/game/player/A/blow.png", // 居中
+  userImage: "/game/player/0/blow.png", // 居中
   setUserImage: (v) =>
     setState((state) => {
       state.userImage = v
